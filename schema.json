@@ -1,0 +1,97 @@
+{
+  "type": "component",
+  "metadata": {},
+  "schema": {
+    "name": "bb-component-SuperTableCell",
+    "friendlyName": "Super Table Cell",
+    "description": "Create Complex Super Columns !",
+    "icon": "TableEdit",
+    "styles": [ "border" ],
+    "settings": [
+      {
+        "type": "text",
+        "key": "value",
+        "label": "Value"
+      },
+      {
+        "type": "select",
+        "key": "cellType",
+        "label": "Cell Type",
+        "options": [
+          { "label": "Auto", "value": "auto" },
+          { "label": "Single Value", "value": "single" },
+          { "label": "Relationship", "value": "relationship" },
+          { "label": "JSON Object", "value": "json" },
+          { "label": "Options", "value": "options" }
+        ],
+        "defaultValue": "auto",
+        "info": "On Auto will match Parent Column Type"
+      },
+      {
+        "type": "select",
+        "key": "viewType",
+        "label": "Display Type",
+        "dependsOn": { "setting": "cellType", "value":"relationship"},
+        "options": [
+          { "label": "List", "value": "list" },
+          { "label": "Horizontal List", "value": "hlist" },
+          { "label": "TreeView", "value": "tree" }
+        ],
+        "defaultValue": "tree"
+      },
+      {
+        "type": "boolean",
+        "key": "editable",
+        "label": "Editable"
+      },
+      {
+        "type": "boolean",
+        "key": "customize",
+        "label": "Customize",
+        "defaultValue": false
+      },
+      {
+        "section": true,
+        "name": "Advanced Settings",
+        "dependsOn": "customize",
+        "settings": [
+          {
+            "type": "select",
+            "key": "fontSize",
+            "label": "Font Size",
+            "options": [
+              { "label": "Inherit", "value" : "inherit"},
+              { "label": "Extra Small", "value": "XS"},
+              { "label": "Small", "value": "S"},
+              { "label": "Mediium", "value": "M"},
+              { "label": "Large", "value": "L"},
+              { "label": "Extra Large", "value": "XL"}
+            ]
+          },
+          {
+            "type": "select",
+            "key": "fontWeight",
+            "label": "Font Weight",
+            "options": [
+              { "label": "Lighter", "value": "lighter"},
+              { "label": "Light", "value": "light"},
+              { "label": "Normal", "value": "normal"},
+              { "label": "Bold", "value": "bold"},
+              { "label": "Bolder", "value": "bolder"}
+            ]
+          },
+          {
+            "type": "color",
+            "key" : "cellTextColor",
+            "label": "Text Color"
+          },
+          {
+            "type": "color",
+            "key" : "cellBackground",
+            "label": "Background Color"
+          }
+        ]
+      }
+    ]
+  }
+}
