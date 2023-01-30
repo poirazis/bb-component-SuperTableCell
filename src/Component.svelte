@@ -16,7 +16,7 @@
   export let viewType
   export let fontSize
 
-  $: _fontSize = fontSize === "inherit" ? $tableStore.fontSize : fontSize
+  let autobind = !value 
 
   const dispatch = createEventDispatcher()
   let editing = false, original
@@ -48,19 +48,22 @@
 		element.focus()
 	}
 
-  function initialize ( ) {
-    // Auto bind the value to the Super Column CellValue binding
-    if ( $builderStore?.inBuilder && !value) {
-      let binding = "{{ [" + columnInfo.name + "].[cellValue]" + " }}"
+  $: if (columnInfo && autobind) pickyBinder()
+  function pickyBinder()  {
+    // Auto bind the value to the Super Column CellValue binding if plaed in one
+    if ( $builderStore?.inBuilder && value != "" && !autobind ) {
+      let binding = "{{ [" + columnInfo?.name + "].[cellValue]" + " }}"
       value = binding
-      builderStore.actions.updateProp("value", binding)
+      builderStore?.actions.updateProp("value", binding)
+      autobind = true
     }
   }
-
-  onMount (() => initialize ())
 </script>
 
 <div use:styleable={$component.styles}>
+
+{#key autobind}
+  
 
     {#if !columnInfo}
       <p> Super Table Cells need to be placed inside Super Table Column Component </p>
@@ -88,10 +91,8 @@
     {#if cellType == "relationship"}
       <CellRelationship {viewType} {value} open={false} />
     {:else}
-      <div class="spectrum-Body" 
-        style:white-space= { "nowrap"}
-        style:font-size={ "var(--st-row-font-size)" }
-        style:color={ "var(--spectrum-table-cell-text-color, var(--spectrum-alias-text-color))" }>
+      <div class="spectrum-Table-cell" 
+        style:white-space= { "nowrap"} >
         {value}			
       </div> 
     {/if}
@@ -99,9 +100,14 @@
   {/if}
 
   {/if}
+
+  {/key}
 </div>
 
 <style>
+  .spectrum-Table-cell {
+    padding: unset !important;
+  }
 
   .inlineTextInput {
     border: none;
