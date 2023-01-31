@@ -1,5 +1,6 @@
 <script>
   import { getContext, createEventDispatcher, onMount } from 'svelte'
+    import { bubble } from 'svelte/internal';
   import { fade } from "svelte/transition"
 
   import CellRelationship from './lib/CellRelationship.svelte';
@@ -14,12 +15,13 @@
   export let editable
   export let cellType
   export let viewType
-  export let fontSize
 
-  let autobind = !value 
+  let autobind = value ?? true 
+  $: fontSize = $tableStore?.stylingOptions.rowFontSize ?? 14
 
   const dispatch = createEventDispatcher()
   let editing = false, original
+  let holdColor
 
   onMount(() => {
     original = value
@@ -27,6 +29,8 @@
 
   function edit() {
     editing = true
+    holdColor = $tableStore.stylingOptions.rowFontColor
+    $tableStore.stylingOptions.rowFontColor = "var(--spectrum-global-color-gray-100)"
   }
 
   function submit() {
@@ -34,6 +38,7 @@
 			dispatch('submit', value)
 		}
     editing = false
+    $tableStore.stylingOptions.rowFontColor = holdColor
   }
 
   function keydown(event) {
@@ -49,82 +54,85 @@
 	}
 
   $: if (columnInfo && autobind) pickyBinder()
+
   function pickyBinder()  {
     // Auto bind the value to the Super Column CellValue binding if plaed in one
-    if ( $builderStore?.inBuilder && value != "" && !autobind ) {
+    if ( $builderStore?.inBuilder ) {
       let binding = "{{ [" + columnInfo?.name + "].[cellValue]" + " }}"
-      value = binding
       builderStore?.actions.updateProp("value", binding)
-      autobind = true
+      value = binding
+      autobind = false
     }
   }
+    // Append Styles Super Table Styling variables
+    $: styles = {
+    ...$component?.styles,
+    normal: {
+      ...$component?.styles.normal,
+      "--super-table-cell-editable-height": fontSize + 14 + "px"
+    },
+  };
 </script>
 
-<div use:styleable={$component.styles}>
-
-{#key autobind}
-  
-
-    {#if !columnInfo}
-      <p> Super Table Cells need to be placed inside Super Table Column Component </p>
-    {:else}
-
-
-  {#if editable && editing }
-      <form on:submit|preventDefault={submit} on:keydown={keydown}>
-        <input class="inlineTextInput" bind:value on:blur={submit} {required} use:focus/>
-        <div class="spectrum-Textfield spectrum-Textfield--quiet">
-          <input type="text" placeholder="Enter your name" name="field" bind:value class="spectrum-Textfield-input">
-        </div>    
-      </form>
-  {:else if editable}
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div
-      style:--valueColor={valueColor || "--primaryColor"} 
-      class="value" on:click={edit}>
-      {value}			
-			<svg class="spectrum-Icon" focusable="false" aria-hidden="true">
-				<use xlink:href="#spectrum-icon-18-Edit" />
-			</svg>
-    </div>
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<div 
+  class="super-table-cell" 
+  on:click={edit}
+  class:in-edit-mode={editing} 
+  use:styleable={styles}>
+  <!-- Check valid placement  -->
+  {#if !columnInfo || !tableStore}
+    <p> Super Table Cells need to be placed inside Super Table Column Component </p>
   {:else}
-    {#if cellType == "relationship"}
-      <CellRelationship {viewType} {value} open={false} />
+    {#if editable && editing }
+      <form on:submit|preventDefault={submit} on:keydown={keydown}>
+        <input style:--super-table-row-font-size={fontSize + "px"} class="inlineTextInput" bind:value on:blur={submit} {required} use:focus/>  
+      </form>
+    {:else if editable}
+      {value}
     {:else}
-      <div class="spectrum-Table-cell" 
-        style:white-space= { "nowrap"} >
-        {value}			
-      </div> 
+      {#if cellType == "relationship"}
+        <CellRelationship {viewType} {value} open={false} />
+      {:else}
+          {value} 
+      {/if}
     {/if}
-
   {/if}
-
-  {/if}
-
-  {/key}
 </div>
 
 <style>
-  .spectrum-Table-cell {
-    padding: unset !important;
+
+  .super-table-cell {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: all 1500ms;
+    min-height: var(--super-table-cell-editable-height);
+
+  }
+  .super-table-cell.in-edit-mode {
+
   }
 
   .inlineTextInput {
+    font-size: var(--super-table-row-font-size);
+    font-weight: inherit;
+    font-style: italic;
+    color: inherit;
     border: none;
     background: none;
     outline: none;
-    width: 100%;
-    padding: 4px 12px;
+    min-width: fit-content !important;
+    width: 60px;
+    padding: 4px 4px 6px 0px;
+    animation: fade-in 330ms ease-in-out;
   }
 
   .inlineTextInput:focus {
     border: none;
-    border-bottom: 1px solid var(--spectrum-global-color-gray-500);
-    border-radius: 2px;
-    background-color: var(--spectrum-global-color-gray-200);;
+    border-bottom: 1px solid rgb(2, 101, 220);
     color: var(--spectrum-global-color-gray-900);
     outline: none;
-
   }
 
   .spectrum-Icon {
@@ -132,5 +140,14 @@
     height: 12px;
     fill: var(--spectrum-global-color-gray-600);
     display: none;
+  }
+
+  @keyframes fade-in {
+    0% {
+      opacity: 0%;
+    }
+    100% {
+      transform: 100%;
+    }
   }
 </style>

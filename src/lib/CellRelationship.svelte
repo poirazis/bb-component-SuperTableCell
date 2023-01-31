@@ -1,5 +1,4 @@
 <script>
-    import { getContext } from "svelte"; 
     export let value
 		export let open 
 		export let viewType
