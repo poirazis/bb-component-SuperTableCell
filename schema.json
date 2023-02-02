@@ -14,6 +14,11 @@
         "label": "Value"
       },
       {
+        "type": "text",
+        "key": "rowKey",
+        "label": "Key"
+      },
+      {
         "type": "select",
         "key": "cellType",
         "label": "Cell Type",
