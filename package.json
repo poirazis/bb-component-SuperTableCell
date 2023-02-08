@@ -1,6 +1,6 @@
 {
   "name": "bb-component-SuperTableCell",
-  "version": "1.0.6-alpha",
+  "version": "1.0.13-alpha",
   "description": "An amazing Budibase component!",
   "license": "MIT",
   "svelte": "index.js",

@@ -6,7 +6,6 @@
     "friendlyName": "Super Table Cell",
     "description": "Create Complex Super Columns !",
     "icon": "TableEdit",
-    "styles": [ "border" ],
     "settings": [
       {
         "type": "text",
@@ -30,7 +29,7 @@
           { "label": "Options", "value": "options" }
         ],
         "defaultValue": "auto",
-        "info": "On Auto will match Parent Column Type"
+        "info": "On Auto will match Parent Column Field Type"
       },
       {
         "type": "select",
@@ -45,57 +44,46 @@
         "defaultValue": "tree"
       },
       {
-        "type": "boolean",
-        "key": "editable",
-        "label": "Editable"
+        "type": "select",
+        "key": "fontSize",
+        "label": "Font Size",
+        "options": [
+          {"label": "Inherit", "value": "inherit"},
+          {"label": "Extra Small", "value": "XS"},
+          {"label": "Small", "value": "S"},
+          {"label": "Medium", "value": "M"},
+          {"label": "Large", "value": "L"},
+          {"label": "Extra Large", "value": "XL"}
+        ],
+        "defaultValue": "M"
+      },
+      {
+        "type": "color",
+        "key": "fontColor",
+        "label": "Font Color"
       },
       {
         "type": "boolean",
-        "key": "customize",
-        "label": "Customize",
+        "key": "isBold",
+        "label": "Bold",
         "defaultValue": false
       },
       {
-        "section": true,
-        "name": "Advanced Settings",
-        "dependsOn": "customize",
-        "settings": [
-          {
-            "type": "select",
-            "key": "fontSize",
-            "label": "Font Size",
-            "options": [
-              { "label": "Inherit", "value" : "inherit"},
-              { "label": "Extra Small", "value": "XS"},
-              { "label": "Small", "value": "S"},
-              { "label": "Mediium", "value": "M"},
-              { "label": "Large", "value": "L"},
-              { "label": "Extra Large", "value": "XL"}
-            ]
-          },
-          {
-            "type": "select",
-            "key": "fontWeight",
-            "label": "Font Weight",
-            "options": [
-              { "label": "Lighter", "value": "lighter"},
-              { "label": "Light", "value": "light"},
-              { "label": "Normal", "value": "normal"},
-              { "label": "Bold", "value": "bold"},
-              { "label": "Bolder", "value": "bolder"}
-            ]
-          },
-          {
-            "type": "color",
-            "key" : "cellTextColor",
-            "label": "Text Color"
-          },
-          {
-            "type": "color",
-            "key" : "cellBackground",
-            "label": "Background Color"
-          }
-        ]
+        "type": "boolean",
+        "key": "isItalic",
+        "label": "Italic",
+        "defaultValue": false
+      },
+      {
+        "type": "boolean",
+        "key": "isUnderline",
+        "label": "Underline",
+        "defaultValue": false
+      },
+      {
+        "type": "boolean",
+        "key": "editable",
+        "label": "Editable"
       }
     ]
   }
