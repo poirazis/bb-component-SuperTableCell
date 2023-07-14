@@ -1,6 +1,6 @@
 <script>
   import { getContext , onMount } from 'svelte'
-  import CellString from './lib/CellString.svelte';
+  import CellString from "../lib/SuperTableCell/cells/CellString.svelte"
 
   const component = getContext("component")
   const { styleable, builderStore  } = getContext("sdk")
