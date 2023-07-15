@@ -76,6 +76,8 @@
   }
 </script>
 
+<!-- Will Reder Different CellTypes depending on the column type or manual override -->
+
 <CellString
   on:enterEdit={handleEnterEdit}
   on:submit={handleSubmit}

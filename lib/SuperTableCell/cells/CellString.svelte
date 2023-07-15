@@ -62,11 +62,16 @@
   }
 
   .inline-value { 
+    min-height: 2.5rem;
     padding: 4px 0px;
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 
   .inline-edit {
+    min-height: 2.5rem;
     background-color: inherit;
     font-size: inherit;
     color: inherit;
