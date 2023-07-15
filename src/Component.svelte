@@ -1,89 +1,77 @@
 <script>
-  import { getContext , onMount } from 'svelte'
-  import CellString from "../lib/SuperTableCell/cells/CellString.svelte"
+  import { getContext, onMount } from "svelte";
+  import SuperTableCell from "../lib/SuperTableCell/SuperTableCell.svelte";
 
-  const component = getContext("component")
-  const { styleable, builderStore  } = getContext("sdk")
-  const columnContext = getContext("columnContext")
-  const tableDataChangesStore = getContext("tableDataChangesStore")
-  
-  export let value, rowKey, required = true
-  export let valueColor
-  export let editable
-  export let cellType
-  export let viewType
+  const component = getContext("component");
+  const { styleable, builderStore } = getContext("sdk");
+  const columnContext = getContext("columnContext");
 
-  export let fontColor, fontSize, isBold, isUnderline, isItalic 
+  export let value,
+    rowKey,
+    required = true;
+  export let valueColor;
+  export let editable;
+  export let cellType;
+  export let viewType;
 
-  let autobind = true
-  let originalValue
+  export let fontColor, fontSize, isBold, isUnderline, isItalic;
+
+  let autobind = true;
+  let originalValue;
+
+  $: cellOptions = {
+    editable: editable
+  }
 
   // Append Styles Super Table Styling variables
   $: styles = {
     ...$component?.styles,
     normal: {
       ...$component?.styles.normal,
-      ...generateStylingVariables()
+      ...generateStylingVariables(),
     },
   };
 
-  // Component Function Definitions 
-  function pickyBinder()  {
+  // Component Function Definitions
+  function pickyBinder() {
     // Auto bind the value to the Super Column CellValue binding if plaed in one
-    if ( $builderStore?.inBuilder ) {
-      let valueBinding = "{{ [" + columnContext?.columnID + "].[cellValue]" + " }}"
-      builderStore?.actions.updateProp("value", valueBinding)
-      let keyBinding = "{{ [" + columnContext?.columnID + "].[rowKey]" + " }}"
-      builderStore?.actions.updateProp("rowKey", keyBinding)
-      autobind = false
+    if ($builderStore?.inBuilder) {
+      let valueBinding =
+        "{{ [" + columnContext?.columnID + "].[cellValue]" + " }}";
+      builderStore?.actions.updateProp("value", valueBinding);
+      let keyBinding = "{{ [" + columnContext?.columnID + "].[rowKey]" + " }}";
+      builderStore?.actions.updateProp("rowKey", keyBinding);
+      autobind = false;
     }
   }
 
-  function generateStylingVariables () {
-    let styles = {}
-    if ( fontColor ) styles["--spectrum-table-m-regular-cell-text-color"] = fontColor
-    if ( isBold ) styles["--spectrum-table-m-regular-cell-text-weight"] = 700
-    if ( isItalic ) styles["--spectrum-table-m-regular-cell-text-style"] = "italic"
-    if ( isUnderline ) styles["--spectrum-table-m-regular-cell-text-decoration"] = "underline"
-    return styles
+  function generateStylingVariables() {
+    let styles = {};
+    if (fontColor)
+      styles["--spectrum-table-m-regular-cell-text-color"] = fontColor;
+    if (isBold) styles["--spectrum-table-m-regular-cell-text-weight"] = 700;
+    if (isItalic)
+      styles["--spectrum-table-m-regular-cell-text-style"] = "italic";
+    if (isUnderline)
+      styles["--spectrum-table-m-regular-cell-text-decoration"] = "underline";
+    return styles;
   }
 
-  // Event Handlers 
-  function handleEnterEdit () {
-    console.log("Editing")
-  }
-
-  function handleSubmit ( event ) {
-    let newDataChange = {
-				rowKey: rowKey,
-				field: columnContext?.columnField,
-				originalValue: originalValue,
-				newValue: event.detail.newValue
-			}
-
-    // Get all other dataChanges, removing any previous changes of ours
-    let dataChanges = $tableDataChangesStore.filter( v => v.rowKey != rowKey || v.field != columnContext?.columnField)
-
-    $tableDataChangesStore = [...dataChanges, newDataChange]
-  }
-
-  function handleCancelEdit () {
-    console.log("Editing Cancelled")
-  }
-
-  onMount( () => { 
-      if (columnContext && !value && autobind) pickyBinder() 
-      originalValue = value
-    } )
+  onMount(() => {
+    if (columnContext && !value && autobind) pickyBinder();
+    originalValue = value;
+  });
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="super-table-cell" use:styleable={styles}>
   <!-- Check valid placement  -->
   {#if !columnContext}
-    <p> Super Table Cells need to be placed inside Super Table Column Components </p>
-  {:else} 
-    <CellString on:enterEdit={handleEnterEdit} on:submit={handleSubmit} on:cancelEdit={handleCancelEdit} {value} {editable} />
+    <p>
+      Super Table Cells need to be placed inside Super Table Column Components
+    </p>
+  {:else}
+    <SuperTableCell {rowKey} {value} {cellOptions} />
   {/if}
 </div>
 
@@ -102,5 +90,4 @@
     text-decoration: var(--spectrum-table-m-regular-cell-text-decoration);
     width: 100%;
   }
-
 </style>

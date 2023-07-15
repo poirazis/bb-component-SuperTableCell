@@ -2,7 +2,7 @@
   import { createEventDispatcher, onMount } from 'svelte'
 
   export let value
-  export let editable
+  export let cellOptions
 
   const dispatch = createEventDispatcher()
   let editing = false, original
@@ -12,7 +12,7 @@
   })
 
   function edit() {
-    if (editable) {
+    if (cellOptions.editable) {
       editing = true
       dispatch("enterEdit")
     }
