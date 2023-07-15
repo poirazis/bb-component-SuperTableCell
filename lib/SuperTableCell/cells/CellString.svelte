@@ -22,7 +22,9 @@
     event.preventDefault()
 		if (value != original) {
 			dispatch('submit', { newValue: value })
-		}
+		} else {
+      dispatch("cancelEdit")
+    }
 		
     editing = false
   }
@@ -45,54 +47,35 @@
 	}
 </script>
 
-{#if editing}
-  <div class="inline-wrapper">
-    <input class="inline-edit" on:keydown={keydown} bind:value on:blur={submit} use:focus/>
-  </div>
-{:else}
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="inline-value" on:click={edit}>
-    {value}
-  </div>
-{/if}
+  {#if editing}
+    <input 
+    style:padding-left={cellOptions.paddingLeft}
+    class="inline-edit" on:keydown={keydown} bind:value on:blur={submit} use:focus/>
+  {:else}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <div on:click={edit} class="buttonCell" style:padding-left={cellOptions.paddingLeft}> {value} </div>
+  {/if}
 
 <style>
-  .inline-wrapper {
-    width: 100%;
-  }
 
-  .inline-value { 
-    min-height: 2.5rem;
-    padding: 4px 0px;
-    width: 100%;
+  .buttonCell {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    border: 1px solid lime;
-  }
-
-  .inline-edit {
-    min-height: 2.5rem;
-    background-color: inherit;
-    font-size: inherit;
-    color: inherit;
-    font-weight: inherit;
-    text-align: inherit;
-    box-shadow: none;
-    box-sizing: border-box;
+    height: 100%;
     width: 100%;
-    border: var(--spectrum-textfield-border-size) solid;
-    border-color: var(--spectrum-alias-border-color);
-    border-radius: 4px;
-
   }
 
-  .inline-edit:focus {
-    padding: 4px;
+  input.inline-edit {
+    box-sizing: border-box;
     outline: none;
-    border-width: 1px;
-    border-style: solid;
-    border-color: var(--spectrum-alias-border-color-mouse-focus);
+    background: none;
+    color: inherit;
+    border: none;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+    height: 100%;
     background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
   }
 </style>

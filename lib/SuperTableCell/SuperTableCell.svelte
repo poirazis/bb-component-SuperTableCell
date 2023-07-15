@@ -5,6 +5,7 @@
 
   const columnContext = getContext("columnContext");
   const tableDataChangesStore = getContext("tableDataChangesStore");
+  const tableThemeStore = getContext("tableThemeStore");
 
   export let cellOptions 
   export let value,
@@ -18,13 +19,19 @@
   export let fontColor, fontSize, isBold, isUnderline, isItalic;
 
   let originalValue;
+  $: cellOptions = {
+    editable: true,
+    paddingLeft: $tableThemeStore.rowHorizontalPadding,
+    paddingTop: $tableThemeStore.rowVerticalPadding
+  }
 
   // Setup Cell State Machine
-  const cellState = fsm("entering", {
-    idle: { edit: "entering " },
+  const cellState = fsm("idle", {
+    idle: { edit: "entering" },
 
     entering: {
       submit: "submitting",
+      cancel: "idle"
     },
 
     submitting: {
@@ -50,11 +57,6 @@
     completed: {},
   });
 
-  // Event Handlers
-  function handleEnterEdit() {
-    console.log("Editing");
-  }
-
   function handleSubmit(event) {
     let newDataChange = {
       rowKey: rowKey,
@@ -71,17 +73,34 @@
     $tableDataChangesStore = [...dataChanges, newDataChange];
   }
 
-  function handleCancelEdit() {
-    console.log("Editing Cancelled");
-  }
 </script>
 
 <!-- Will Reder Different CellTypes depending on the column type or manual override -->
+<div 
+  class="superTableCell"
+  class:inEdit={$cellState === "entering"}
+>
+  <CellString
+    on:enterEdit={cellState.edit}
+    on:submit={cellState.submit}
+    on:cancelEdit={cellState.cancel}
+    {value}
+    {cellOptions}
+  />
+</div>
 
-<CellString
-  on:enterEdit={handleEnterEdit}
-  on:submit={handleSubmit}
-  on:cancelEdit={handleCancelEdit}
-  {value}
-  {cellOptions}
-/>
+<style>
+  .superTableCell {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+  }
+
+  .inEdit {
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--spectrum-alias-border-color-mouse-focus);
+  }
+</style>
