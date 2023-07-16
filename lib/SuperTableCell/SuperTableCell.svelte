@@ -5,7 +5,6 @@
 
   const columnContext = getContext("columnContext");
   const tableDataChangesStore = getContext("tableDataChangesStore");
-  const tableThemeStore = getContext("tableThemeStore");
 
   export let cellOptions 
   export let value,
@@ -21,8 +20,6 @@
   let originalValue;
   $: cellOptions = {
     editable: true,
-    paddingLeft: $tableThemeStore.rowHorizontalPadding,
-    paddingTop: $tableThemeStore.rowVerticalPadding
   }
 
   // Setup Cell State Machine
