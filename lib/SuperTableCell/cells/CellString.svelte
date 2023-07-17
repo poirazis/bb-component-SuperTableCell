@@ -50,10 +50,14 @@
   {#if editing}
     <input 
     style:padding-left={cellOptions.paddingLeft}
+    style:padding-right={cellOptions.paddingLeft}
     class="inline-edit" on:keydown={keydown} bind:value on:blur={submit} use:focus/>
   {:else}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div on:click={edit} class="buttonCell" style:padding-left={cellOptions.paddingLeft}> {value} </div>
+    <div on:click={edit} class="buttonCell" 
+    style:padding-left={cellOptions.paddingLeft}
+    style:padding-right={cellOptions.paddingLeft}
+    > {value} </div>
   {/if}
 
 <style>
@@ -64,6 +68,7 @@
     justify-content: center;
     height: 100%;
     width: 100%;
+    white-space: nowrap;
   }
 
   input.inline-edit {

@@ -18,9 +18,6 @@
   export let fontColor, fontSize, isBold, isUnderline, isItalic;
 
   let originalValue;
-  $: cellOptions = {
-    editable: true,
-  }
 
   // Setup Cell State Machine
   const cellState = fsm("idle", {
