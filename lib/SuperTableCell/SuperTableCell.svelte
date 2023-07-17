@@ -1,5 +1,5 @@
 <script>
-  import { getContext, onMount } from "svelte";
+  import { getContext } from "svelte";
   import fsm from "svelte-fsm";
   import CellString from "./cells/CellString.svelte";
 
@@ -18,6 +18,15 @@
   export let fontColor, fontSize, isBold, isUnderline, isItalic;
 
   let originalValue;
+
+  const getCellValue = (value, template) => {
+    if (!template) {
+      return value
+    }
+    return processStringSync(template, { value })
+  }
+
+  $: value = getCellValue(value, cellOptions.cellTemplate)
 
   // Setup Cell State Machine
   const cellState = fsm("idle", {
