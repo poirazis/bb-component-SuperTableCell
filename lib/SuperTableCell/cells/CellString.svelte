@@ -62,11 +62,24 @@
 
 <style>
 
-  .buttonCell {
+  .inline-value { 
+    width: 100%;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    height: 100%;
+    padding-left: var(--super-table-cell-padding);
+    padding-right: var(--super-table-cell-padding);
+  }
+
+  .inline-edit {
+    min-height: 2.5rem;
+    background-color: inherit;
+    font-size: inherit;
+    color: inherit;
+    font-weight: inherit;
+    text-align: inherit;
+    box-shadow: none;
+    box-sizing: border-box;
     width: 100%;
     white-space: nowrap;
   }
