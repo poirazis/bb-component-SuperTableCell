@@ -48,20 +48,13 @@
 </script>
 
   {#if editing}
-    <input 
-    style:padding-left={cellOptions.paddingLeft}
-    style:padding-right={cellOptions.paddingLeft}
-    class="inline-edit" on:keydown={keydown} bind:value on:blur={submit} use:focus/>
+    <input class="inline-edit" on:keydown={keydown} bind:value on:blur={submit} use:focus/>
   {:else}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div on:click={edit} class="buttonCell" 
-    style:padding-left={cellOptions.paddingLeft}
-    style:padding-right={cellOptions.paddingLeft}
-    > {value} </div>
+    <div on:click={edit} class="inline-value"> {value} </div>
   {/if}
 
 <style>
-
   .inline-value { 
     width: 100%;
     display: flex;
@@ -70,27 +63,14 @@
     padding-left: var(--super-table-cell-padding);
     padding-right: var(--super-table-cell-padding);
   }
-
-  .inline-edit {
-    min-height: 2.5rem;
-    background-color: inherit;
-    font-size: inherit;
-    color: inherit;
-    font-weight: inherit;
-    text-align: inherit;
-    box-shadow: none;
-    box-sizing: border-box;
-    width: 100%;
-    white-space: nowrap;
-  }
-
   input.inline-edit {
     box-sizing: border-box;
+    padding-left: var(--super-table-cell-padding);
+    padding-right: var(--super-table-cell-padding);
     outline: none;
     background: none;
     color: inherit;
     border: none;
-    padding: 0;
     font: inherit;
     cursor: pointer;
     height: 100%;

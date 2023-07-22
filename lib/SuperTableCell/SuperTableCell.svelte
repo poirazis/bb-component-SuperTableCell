@@ -19,15 +19,6 @@
 
   let originalValue;
 
-  const getCellValue = (value, template) => {
-    if (!template) {
-      return value
-    }
-    return processStringSync(template, { value })
-  }
-
-  $: value = getCellValue(value, cellOptions.cellTemplate)
-
   // Setup Cell State Machine
   const cellState = fsm("idle", {
     idle: { edit: "entering" },
