@@ -48,10 +48,12 @@
 </script>
 
   {#if editing}
-    <input class="inline-edit" on:keydown={keydown} bind:value on:blur={submit} use:focus/>
+    <input 
+    class="inline-edit" on:keydown={keydown} bind:value on:blur={submit} use:focus/>
   {:else}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div on:click={edit} class="inline-value"> {value} </div>
+    <div on:click={edit} class="inline-value" 
+    > {value} </div>
   {/if}
 
 <style>
@@ -60,8 +62,6 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding-left: var(--super-table-cell-padding);
-    padding-right: var(--super-table-cell-padding);
   }
   input.inline-edit {
     box-sizing: border-box;
