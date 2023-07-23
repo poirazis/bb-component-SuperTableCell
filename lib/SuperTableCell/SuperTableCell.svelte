@@ -6,7 +6,6 @@
   const columnContext = getContext("columnContext");
   const tableDataChangesStore = getContext("tableDataChangesStore");
 
-  export let cellOptions 
   export let value,
     rowKey,
     required = true;
@@ -78,8 +77,8 @@
     on:enterEdit={cellState.edit}
     on:submit={cellState.submit}
     on:cancelEdit={cellState.cancel}
+    {editable}
     {value}
-    {cellOptions}
   />
 </div>
 
