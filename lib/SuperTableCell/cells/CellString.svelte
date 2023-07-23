@@ -64,7 +64,6 @@
     justify-content: center;
     padding-left: var(--super-table-cell-padding);
     padding-right: var(--super-table-cell-padding);
-    border: 1px solid lime;
   }
   input.inline-edit {
     box-sizing: border-box;
