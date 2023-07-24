@@ -52,20 +52,39 @@
     class="inline-edit" on:keydown={keydown} bind:value on:blur={submit} use:focus/>
   {:else}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div on:click={edit} class="inline-value" 
-    > {value} </div>
+    <div on:click={edit} class="inline-value">
+       {#each value as item }
+          <div class="item"> {item} </div>
+       {/each} 
+    </div>
   {/if}
 
 <style>
   .inline-value { 
     width: 100%;
+    height: 100%;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    white-space: nowrap;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    column-gap: 0.5rem;
     padding-left: var(--super-table-cell-padding);
     padding-right: var(--super-table-cell-padding);
   }
+
+  .item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 4px;
+    background-color: darkcyan;
+    color: white;
+    height: 50%;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    max-height: 1.85rem;
+  }
+
   input.inline-edit {
     box-sizing: border-box;
     padding-left: var(--super-table-cell-padding);

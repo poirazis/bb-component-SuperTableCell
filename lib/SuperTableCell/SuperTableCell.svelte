@@ -2,6 +2,9 @@
   import { getContext } from "svelte";
   import fsm from "svelte-fsm";
   import CellString from "./cells/CellString.svelte";
+  import CellArray from "./cells/CellArray.svelte";
+  import CellLink from "./cells/CellLink.svelte";
+  import CellDatetime from "./cells/CellDatetime.svelte";
 
   const columnContext = getContext("columnContext");
   const tableDataChangesStore = getContext("tableDataChangesStore");
@@ -11,7 +14,7 @@
     required = true;
   export let valueColor;
   export let editable;
-  export let cellType;
+  export let columnType;
   export let viewType;
 
   export let fontColor, fontSize, isBold, isUnderline, isItalic;
@@ -73,13 +76,39 @@
   class="superTableCell"
   class:inEdit={$cellState === "entering"}
 >
-  <CellString
-    on:enterEdit={cellState.edit}
-    on:submit={cellState.submit}
-    on:cancelEdit={cellState.cancel}
-    {editable}
-    {value}
-  />
+  {#if columnType === "string"}
+    <CellString
+      on:enterEdit={cellState.edit}
+      on:submit={cellState.submit}
+      on:cancelEdit={cellState.cancel}
+      {editable}
+      {value}
+    />
+  {:else if columnType === "datetime"}
+    <CellDatetime
+      on:enterEdit={cellState.edit}
+      on:submit={cellState.submit}
+      on:cancelEdit={cellState.cancel}
+      {editable}
+      {value}
+    />
+  {:else if columnType === "link"}
+    <CellLink
+      on:enterEdit={cellState.edit}
+      on:submit={cellState.submit}
+      on:cancelEdit={cellState.cancel}
+      editable={false}
+      {value}
+    />
+  {:else if columnType === "array"}
+    <CellArray
+      on:enterEdit={cellState.edit}
+      on:submit={cellState.submit}
+      on:cancelEdit={cellState.cancel}
+      {editable}
+      {value}
+    />
+  {/if}
 </div>
 
 <style>
