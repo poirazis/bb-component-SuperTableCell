@@ -53,7 +53,7 @@
   {:else}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div on:click={edit} class="inline-value" 
-    > {value} </div>
+    > {value ?? ""} </div>
   {/if}
 
 <style>

@@ -118,6 +118,8 @@
     justify-content: center;
     width: 100%;
     height: 100%;
+    background: transparent;
+    color: var(--super-column-color);
   }
 
   .inEdit {

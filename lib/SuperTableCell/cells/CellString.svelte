@@ -62,6 +62,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: var(--super-column-alignment);
     white-space: nowrap;
     padding-left: var(--super-table-cell-padding);
     padding-right: var(--super-table-cell-padding);

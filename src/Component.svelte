@@ -19,10 +19,6 @@
   let autobind = true;
   let originalValue;
 
-  $: cellOptions = {
-    editable: editable
-  }
-
   // Append Styles Super Table Styling variables
   $: styles = {
     ...$component?.styles,
@@ -71,7 +67,7 @@
       Super Table Cells need to be placed inside Super Table Column Components
     </p>
   {:else}
-    <SuperTableCell {rowKey} {value} {cellOptions} />
+    <SuperTableCell {rowKey} {value} />
   {/if}
 </div>
 
