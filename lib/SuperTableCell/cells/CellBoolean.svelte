@@ -1,5 +1,7 @@
 <script>
   import { createEventDispatcher, onMount } from 'svelte'
+  import Switch from "../../../node_modules/@budibase/bbui/src/Form/Core/Switch.svelte"
+  import Icon from "../../../node_modules/@budibase/bbui/src/Icon/Icon.svelte"
 
   export let value
   export let editable
@@ -45,40 +47,31 @@
 	function focus(element) {
 		element.focus()
 	}
-
-  $: fmtDate = new Date(value)
 </script>
-
-  {#if editing}
-    <input 
-    class="inline-edit" on:keydown={keydown} bind:value on:blur={submit} use:focus/>
+  {#if !editing}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <div on:click={edit} class="inline-value"> 
+    {#if value}
+      <Icon size="XS" name="Checkmark" color={"lime"}/>
+    {/if}
+  </div>
   {:else}
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div on:click={edit} class="inline-value" 
-    > {fmtDate.toLocaleDateString('en-us', { day:"numeric", year:"numeric", month:"short"}) } </div>
+  <div class="inline-value"> 
+    <Switch {value} on:change={(e) => value = e.detail}/>
+  </div>
   {/if}
+
 
 <style>
   .inline-value { 
     width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: var(--super-column-alignment);
     white-space: nowrap;
     padding-left: var(--super-table-cell-padding);
     padding-right: var(--super-table-cell-padding);
-  }
-  input.inline-edit {
-    box-sizing: border-box;
-    padding-left: var(--super-table-cell-padding);
-    padding-right: var(--super-table-cell-padding);
-    outline: none;
-    background: none;
-    color: inherit;
-    border: none;
-    font: inherit;
-    cursor: pointer;
-    height: 100%;
-    background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
   }
 </style>

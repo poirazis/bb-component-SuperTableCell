@@ -5,6 +5,7 @@
   import CellArray from "./cells/CellArray.svelte";
   import CellLink from "./cells/CellLink.svelte";
   import CellDatetime from "./cells/CellDatetime.svelte";
+  import CellBoolean from "./cells/CellBoolean.svelte"
 
   const columnContext = getContext("columnContext");
   const tableDataChangesStore = getContext("tableDataChangesStore");
@@ -98,6 +99,14 @@
       on:submit={cellState.submit}
       on:cancelEdit={cellState.cancel}
       editable={false}
+      {value}
+    />
+  {:else if columnType === "boolean"}
+    <CellBoolean
+      on:enterEdit={cellState.edit}
+      on:submit={cellState.submit}
+      on:cancelEdit={cellState.cancel}
+      {editable}
       {value}
     />
   {:else if columnType === "array"}
