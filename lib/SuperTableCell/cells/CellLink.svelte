@@ -79,7 +79,7 @@
     justify-content: center;
     align-items: center;
     border-radius: 4px;
-    background-color: var(--spectrum-global-color-gray-400);
+    background-color: #3E6990;
     color: white;
     height: 50%;
     padding-left: 0.5rem;

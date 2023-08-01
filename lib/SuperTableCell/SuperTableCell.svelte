@@ -6,6 +6,7 @@
   import CellLink from "./cells/CellLink.svelte";
   import CellDatetime from "./cells/CellDatetime.svelte";
   import CellBoolean from "./cells/CellBoolean.svelte"
+  import CellAttachment from "./cells/CellAttachment.svelte";
 
   const columnContext = getContext("columnContext");
   const tableDataChangesStore = getContext("tableDataChangesStore");
@@ -111,6 +112,14 @@
     />
   {:else if columnType === "array"}
     <CellArray
+      on:enterEdit={cellState.edit}
+      on:submit={cellState.submit}
+      on:cancelEdit={cellState.cancel}
+      {editable}
+      {value}
+    />
+  {:else if columnType === "attachment"}
+    <CellAttachment
       on:enterEdit={cellState.edit}
       on:submit={cellState.submit}
       on:cancelEdit={cellState.cancel}

@@ -1,5 +1,6 @@
 <script>
   import { createEventDispatcher, onMount } from 'svelte'
+  import { clickOutsideAction } from "svelte-legos";
   import Switch from "../../../node_modules/@budibase/bbui/src/Form/Core/Switch.svelte"
   import Icon from "../../../node_modules/@budibase/bbui/src/Icon/Icon.svelte"
 
@@ -47,16 +48,27 @@
 	function focus(element) {
 		element.focus()
 	}
+
+  function cancelEdit() {
+    editing = false;
+    dispatch("cancelEdit");
+  }
 </script>
   {#if !editing}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div on:click={edit} class="inline-value"> 
+  <div   
+    class="inline-value"
+    on:click={edit} > 
     {#if value}
       <Icon size="XS" name="Checkmark" color={"lime"}/>
     {/if}
   </div>
   {:else}
-  <div class="inline-value"> 
+  <div 
+    class="inline-value"
+    use:clickOutsideAction
+    on:clickoutside={cancelEdit} 
+  > 
     <Switch {value} on:change={(e) => value = e.detail}/>
   </div>
   {/if}
