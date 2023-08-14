@@ -5,6 +5,7 @@
   import Icon from "../../../node_modules/@budibase/bbui/src/Icon/Icon.svelte"
 
   export let value
+  export let inEdit
   export let editable
 
   const dispatch = createEventDispatcher()
@@ -54,11 +55,9 @@
     dispatch("cancelEdit");
   }
 </script>
-  {#if !editing}
+  {#if !inEdit}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div   
-    class="inline-value"
-    on:click={edit} > 
+  <div class="inline-value" > 
     {#if value}
       <Icon size="XS" name="Checkmark" color={"lime"}/>
     {/if}
@@ -66,10 +65,9 @@
   {:else}
   <div 
     class="inline-value"
-    use:clickOutsideAction
-    on:clickoutside={cancelEdit} 
+    class:inEdit
   > 
-    <Switch {value} on:change={(e) => value = e.detail}/>
+    <Switch {value} on:change={(e) => dispatch("change", { value: e.detail } )}/>
   </div>
   {/if}
 
@@ -85,5 +83,9 @@
     white-space: nowrap;
     padding-left: var(--super-table-cell-padding);
     padding-right: var(--super-table-cell-padding);
+  }
+
+  .inEdit {
+    background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
   }
 </style>

@@ -1,84 +1,53 @@
 <script>
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
+  import DatePicker from "../../../node_modules/@budibase/bbui/src/Form/Core/DatePicker.svelte"
 
   export let value
-  export let editable
+  export let inEdit = false
 
   const dispatch = createEventDispatcher()
   let editing = false, original
 
-  onMount(() => {
-    original = value
-  })
-
-  function edit() {
-    if (editable) {
-      editing = true
-      dispatch("enterEdit")
-    }
-  }
-
-  function submit(event) {
-    event.preventDefault()
-		if (value != original) {
-			dispatch('submit', { newValue: value })
-		} else {
-      dispatch("cancelEdit")
-    }
-		
-    editing = false
-  }
-
-  function keydown(event) {
-    if (event.key == 'Escape') {
-      event.preventDefault()
-      value = original
-      editing = false
-      dispatch("cancelEdit")
-    } else if ( event.key == "Enter" ) {
-      event.preventDefault()
-      editing = false
-      dispatch('submit', { newValue: value })
-    }
-  }
-	
-	function focus(element) {
-		element.focus()
-	}
 
   $: fmtDate = new Date(value)
 </script>
 
-  {#if editing}
-    <input 
-    class="inline-edit" on:keydown={keydown} bind:value on:blur={submit} use:focus/>
+<div class="control" class:inEdit>
+  {#if inEdit}
+    <DatePicker {value} on:change={(e) => dispatch("change", {value : e.detail } ) } />
   {:else}
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div on:click={edit} class="inline-value" 
-    > {fmtDate.toLocaleDateString('en-us', { day:"numeric", year:"numeric", month:"short"}) } </div>
+    <div class="inline-value"> 
+      {fmtDate.toLocaleDateString('en-us', { day:"numeric", year:"numeric", month:"long"}) } 
+    </div>
   {/if}
+</div>
 
 <style>
+
+  :global(.control > .spectrum-Datepicker > .spectrum-Textfield > .spectrum-Textfield-input ) {
+    border: none;
+  }
+  :global(.control > .spectrum-Datepicker > .spectrum-Picker ) {
+    padding: 0.2rem;
+    background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
+    border: none;
+  }
+  .control {
+    min-height: 2rem;
+    display: flex;
+    align-items: stretch;
+  }
+
+ .inEdit {
+    background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
+  }
   .inline-value { 
-    width: 100%;
+    flex: auto;
     display: flex;
     flex-direction: column;
     justify-content: center;
     white-space: nowrap;
     padding-left: var(--super-table-cell-padding);
     padding-right: var(--super-table-cell-padding);
-  }
-  input.inline-edit {
-    box-sizing: border-box;
-    padding-left: var(--super-table-cell-padding);
-    padding-right: var(--super-table-cell-padding);
-    outline: none;
-    background: none;
-    color: inherit;
-    border: none;
-    font: inherit;
-    cursor: pointer;
-    height: 100%;
-    background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
   }
 </style>

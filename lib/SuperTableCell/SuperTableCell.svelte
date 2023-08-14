@@ -1,61 +1,55 @@
 <script>
   import { getContext } from "svelte";
   import fsm from "svelte-fsm";
+  import clickOutside from "../../../node_modules/@budibase/bbui/src/Actions/click_outside"
+  
+  import { processStringSync } from "@budibase/string-templates"
+
   import CellString from "./cells/CellString.svelte";
-  import CellArray from "./cells/CellArray.svelte";
   import CellLink from "./cells/CellLink.svelte";
   import CellDatetime from "./cells/CellDatetime.svelte";
   import CellBoolean from "./cells/CellBoolean.svelte"
   import CellAttachment from "./cells/CellAttachment.svelte";
+  import CellOptions from "./cells/CellOptions.svelte";
+  import CellNumber from "./cells/CellNumber.svelte";
+
 
   const columnContext = getContext("columnContext");
   const tableDataChangesStore = getContext("tableDataChangesStore");
 
-  export let value,
-    rowKey,
-    required = true;
-  export let valueColor;
-  export let editable;
-  export let columnType;
-  export let viewType;
+  export let value
+  export let rowKey
+  export let editable
+  export let fieldSchema
+  export let valueTemplate
+
 
   export let fontColor, fontSize, isBold, isUnderline, isItalic;
+  export let valueColor;
 
-  let originalValue;
+  let originalValue = value
+  let focused;
+  let editorState
+  let formattedValue
 
-  // Setup Cell State Machine
-  const cellState = fsm("idle", {
-    idle: { edit: "entering" },
+  const getCellValue = (value, template) => {
+    if (!valueTemplate) {
+      return value
+    }
+    return processStringSync(template, { value })
+  }
 
-    entering: {
-      submit: "submitting",
-      cancel: "idle"
-    },
+  /**
+   * Set up Cell state machine.
+   */
+  const cellState = fsm( "View", {
+    View: { focus() { if (editable) {return "Editing"} else {return "Focused"} } },
+    Focused: { unfocus: "View"},
+    Error: { check : "View" },
+    Editing: { submit( e ) { value = e.detail.value ; return "View" }, unfocus: "View" }
+  } )
 
-    submitting: {
-      _enter() {
-        const body = new URLSearchParams({ value });
-        fetch("https://some.endpoint", { method: "POST", body })
-          .then(this.success)
-          .catch(this.error);
-      },
-
-      success: "idle",
-
-      error(err) {
-        error = err;
-        return "invalid";
-      },
-    },
-
-    invalid: {
-      input: "entering",
-    },
-
-    completed: {},
-  });
-
-  function handleSubmit(event) {
+  function acceptChange ( ) { 
     let newDataChange = {
       rowKey: rowKey,
       field: columnContext?.columnField,
@@ -70,64 +64,94 @@
 
     $tableDataChangesStore = [...dataChanges, newDataChange];
   }
+  function cancelChange ( ) { value = originalValue } 
 
+  function handleKeyboard ( e ) {
+
+    if ( e.key == "Escape" ) {
+      cellState.unfocus();
+      cancelChange();
+    } else if (e.key == "Enter" ) {
+      cellState.unfocus();
+      acceptChange()
+    }
+
+  }
+
+  function handleChange( e ) {
+    value = e.detail.value 
+    console.log(value)
+  }
+
+  console.log(valueTemplate)
 </script>
 
 <!-- Will Reder Different CellTypes depending on the column type or manual override -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div 
   class="superTableCell"
-  class:inEdit={$cellState === "entering"}
+  class:inEdit={$cellState === "Editing"}
+  tabIndex="0"
+  on:click={ () => { cellState.focus();  } }
+  on:keydown={handleKeyboard}
+  use:clickOutside={ cellState.unfocus }
 >
-  {#if columnType === "string"}
+  {#if fieldSchema.type === "string"}
     <CellString
-      on:enterEdit={cellState.edit}
-      on:submit={cellState.submit}
-      on:cancelEdit={cellState.cancel}
-      {editable}
-      {value}
+      {cellState}
+      value = {getCellValue(value, valueTemplate)}
     />
-  {:else if columnType === "datetime"}
+  {:else if fieldSchema.type === "number"}
+    <CellNumber
+      inEdit = { $cellState == "Editing"}
+      on:change={handleChange}
+      {value}
+      formattedValue = { getCellValue(value, valueTemplate) }
+    />
+  {:else if fieldSchema.type === "datetime"}
     <CellDatetime
-      on:enterEdit={cellState.edit}
-      on:submit={cellState.submit}
-      on:cancelEdit={cellState.cancel}
-      {editable}
+      inEdit = { $cellState == "Editing"}
+      on:change={handleChange}
       {value}
     />
-  {:else if columnType === "link"}
+  {:else if fieldSchema.type === "link"}
     <CellLink
-      on:enterEdit={cellState.edit}
-      on:submit={cellState.submit}
-      on:cancelEdit={cellState.cancel}
+      {cellState}
       editable={false}
       {value}
     />
-  {:else if columnType === "boolean"}
+  {:else if fieldSchema.type === "boolean"}
     <CellBoolean
-      on:enterEdit={cellState.edit}
-      on:submit={cellState.submit}
-      on:cancelEdit={cellState.cancel}
-      {editable}
+      inEdit = { $cellState == "Editing"}
+      on:change={handleChange}
       {value}
     />
-  {:else if columnType === "array"}
-    <CellArray
-      on:enterEdit={cellState.edit}
-      on:submit={cellState.submit}
-      on:cancelEdit={cellState.cancel}
-      {editable}
+  {:else if fieldSchema.type === "array"}
+    <CellOptions
+      on:change={handleChange}
+      inEdit = { $cellState == "Editing" }
       {value}
+      multi
+      {fieldSchema}
     />
-  {:else if columnType === "attachment"}
+  {:else if fieldSchema.type === "options"}
+    <CellOptions
+      on:change={handleChange}
+      bind:editorState
+      inEdit = {$cellState == "Editing" }
+      {value}
+      {fieldSchema}
+    />
+  {:else if fieldSchema.type === "attachment"}
     <CellAttachment
-      on:enterEdit={cellState.edit}
-      on:submit={cellState.submit}
-      on:cancelEdit={cellState.cancel}
+      {cellState}
       {editable}
       {value}
     />
   {/if}
 </div>
+
+
 
 <style>
   .superTableCell {
@@ -144,5 +168,11 @@
     border-width: 1px;
     border-style: solid;
     border-color: var(--spectrum-alias-border-color-mouse-focus);
+  }
+
+  .focused {
+    border-width: 1px;
+    border-style: solid;
+    border-color: yellowgreen;
   }
 </style>

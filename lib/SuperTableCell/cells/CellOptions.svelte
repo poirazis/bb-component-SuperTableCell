@@ -1,58 +1,56 @@
 <script>
-  import { onMount } from "svelte"
+  import Icon from "../../../node_modules/@budibase/bbui/src/Icon/Icon.svelte"
+  import Popover from "../../../node_modules/@budibase/bbui/src/Popover/Popover.svelte";
+  import fsm from "svelte-fsm"
+  import { createEventDispatcher } from "svelte"
+
+  const dispatch = createEventDispatcher();
 
   export let value
-  export let schema
-  export let options
-  export let onChange
-  export let focused = false
+  export let fieldSchema
+  export let inEdit = false
   export let multi = false
-  export let readonly = false
-  export let api
-  export let invertX = false
-  export let invertY = false
-  export let contentLines = 1
+  export let placeholder = multi ? "Choose some options" : "Choose an option"
 
-  let isOpen = true
+  let anchor
+
+  let editorState = fsm ( "Closed", {
+    Open: { toggle: "Closed" },
+    Closed: { toggle: "Open" }
+  } )
+
   let focusedOptionIdx = null
+  
+  /** 
+   * Make sure value is always an array
+  */
+  $: value = multi  
+           ? value ? value : []
+           : value ? [value] : []
 
-  // $: options = schema?.constraints?.inclusion || []
-  $: editable = true ; // focused && !readonly
-  $: values = Array.isArray(value) ? value : [value].filter(x => x != null)
-  $: {
-    // Close when deselected
-    if (!focused) {
-      close()
-    }
-  }
+  $: options = fieldSchema?.constraints?.inclusion || []
+  $: optionColors = fieldSchema?.optionColors || {}
+  $: if (!inEdit && $editorState == "Open") editorState.toggle();
 
-  const open = () => {
-    isOpen = true
-    focusedOptionIdx = 0
-    console.log("Open Up ")
-  }
-
-  const close = () => {
-    isOpen = false
-  }
 
   const getOptionColor = value => {
-    const index = value ? options.indexOf(value) : null
-    return getColor(index)
+    return "darkcyan";
   }
 
-  const toggleOption = option => {
-    if (!multi) {
-      onChange(option === value ? null : option)
-      close()
-    } else {
-      const sanitizedValues = values.filter(x => options.includes(x))
-      if (sanitizedValues.includes(option)) {
-        onChange(sanitizedValues.filter(x => x !== option))
+  function toggleOption (option) { 
+    if ( !multi ) {
+      value = [option]
+      editorState.toggle()
+    }
+    else {
+      if ( value.includes( option ) ) {
+        value.splice(value.indexOf(option), 1)
+        value = value
       } else {
-        onChange([...sanitizedValues, option])
+        value=[...value,option]
       }
     }
+    dispatch("change", { value : value } ) 
   }
 
   const onKeyDown = e => {
@@ -70,104 +68,108 @@
     return true
   }
 
-  onMount(() => {
-    api = {
-      focus: open,
-      blur: close,
-      isActive: () => isOpen,
-      onKeyDown,
-    }
-  })
-
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div
-  class="container"
-  class:multi
-  class:editable
-  class:open
-  on:click|self={editable ? open : null}
->
-  <div
-    class="values"
-    class:wrap={contentLines > 1}
-    on:click={editable ? open : null}
-  >
-    {#each values as val}
-      {@const color = "var(--spectrum-global-color-gray-500)"}
-      {#if color}
-        <div class="badge text" style="--color: {color}">
-          <span>
-            {val}
-          </span>
-        </div>
-      {:else}
-        <div class="text">
-          {val || ""}
-        </div>
-      {/if}
-    {/each}
-  </div>
-  {#if editable}
-    <div class="arrow" on:click={open}>
-      Click ME
-    </div>
-  {/if}
-  {#if isOpen}
-    <div
-      class="options"
-      class:invertX
-      class:invertY
-      on:wheel={e => e.stopPropagation()}     
-  >
-      {#each options as option, idx}
-        {@const color = "#764235"}
-        <div
-          class="option"
-          on:click={() => toggleOption(option)}
-          class:focused={focusedOptionIdx === idx}
-          on:mouseenter={() => (focusedOptionIdx = idx)}
-        >dd
-          <div class="badge text" style="--color: {color}">
-            {option}
+<div class="control" bind:this={anchor} on:click={ (e) => { if (inEdit) { e.stopPropagation(); editorState.toggle()} }}>
+
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <div class="inline-value" class:inEdit >
+    {#if value.length < 1 && inEdit}
+      <span class="placeholder">{placeholder}</span>
+    {:else}
+      {#each value as val}
+        {@const color = optionColors[val] || getOptionColor(val)}
+        {#if color}
+          <div class="item text" style="--color: {color}">
+            <span>
+              {val}
+            </span>
           </div>
-          {#if values.includes(option)}
-            ✓
-          {/if}
-        </div>
+        {:else}
+          <div class="text">
+            {val || ""}
+          </div>
+        {/if}
       {/each}
+    {/if}
+  </div>
+
+
+  {#if inEdit }
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <div class="arrow" >
+      <Icon name="ChevronDown" />
     </div>
   {/if}
+
+  <Popover on:close={editorState.toggle} {anchor} open={$editorState == "Open"}>
+      <div
+        class="options"
+        on:wheel={e => e.stopPropagation()}
+      >
+
+        {#each options as option, idx}
+          {@const color = optionColors[option] || getOptionColor(option)}
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <div
+            class="option"
+            on:click|stopPropagation={() => toggleOption(option)}
+            class:focused={focusedOptionIdx === idx}
+            on:mouseenter={() => (focusedOptionIdx = idx)}
+          >
+            <div class="option text">
+              <Icon name="LoupeView" size="S" {color}/>
+              {option}
+            </div>
+            {#if value?.includes(option)}
+              <Icon name="Checkmark" size="S" color="var(--primaryColor)" />
+            {/if}
+          </div>
+        {/each}
+
+      </div>
+  </Popover>
 </div>
 
 <style>
-  .container {
+
+  .control {
+    flex: auto;
     display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-start;
-    align-self: stretch;
-    flex: 1 1 auto;
-    overflow: hidden;
-  }
-  .container.editable:hover {
+    align-items: stretch;
     cursor: pointer;
   }
-  .values {
+
+.inline-value { 
+    flex: auto;
     display: flex;
     flex-direction: row;
-    justify-content: flex-start;
-    align-items: flex-start;
-    flex: 1 1 auto;
-    grid-column-gap: var(--cell-spacing);
-    grid-row-gap: var(--cell-padding);
-    overflow: hidden;
-    padding: var(--cell-padding);
-    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding-left: var(--super-table-cell-padding);
+    padding-right: var(--super-table-cell-padding);
   }
-  .values.wrap {
-    flex-wrap: wrap;
+
+  .inline-value .placeholder {
+    font-style: italic;
+    color: var(--spectrum-global-color-gray-600);
+  }
+  .inEdit {
+    background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
+  }
+
+  .item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 4px;
+    background-color: var(--color);
+    color: white;
+    height: 55%;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    max-height: 1.85rem;
   }
   .text {
     overflow: hidden;
@@ -177,70 +179,35 @@
   .multi .text {
     flex: 0 0 auto;
   }
-  .badge {
-    padding: 0 var(--cell-padding);
-    background: var(--color);
-    border-radius: var(--cell-padding);
-    user-select: none;
-    display: flex;
-    align-items: center;
-    gap: var(--cell-spacing);
-    height: 20px;
-    max-width: 100%;
-  }
-  .badge span {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-  }
   .arrow {
     height: 100%;
-    bottom: 2px;
-    padding: 0 6px 0 16px;
     display: grid;
     place-items: center;
-    background: linear-gradient(
-      to right,
-      transparent 0%,
-      var(--cell-background) 40%
-    );
+    padding-left: 0.3rem;
+    padding-right: 0.3rem;
+    background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
   }
   .options {
-    min-width: calc(100% + 2px);
-    position: absolute;
-    top: 100%;
-    left: -1px;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     align-items: stretch;
-    max-height: var(--max-cell-render-height);
     overflow-y: auto;
-    border: var(--cell-border);
-    box-shadow: 0 0 20px -4px rgba(0, 0, 0, 0.15);
-    border-bottom-left-radius: 2px;
-    border-bottom-right-radius: 2px;
-  }
-  .options.invertX {
-    left: auto;
-    right: 0;
-  }
-  .options.invertY {
-    transform: translateY(-100%);
-    top: 0;
+    padding: 0.3rem;
+    gap: 0rem;
   }
   .option {
-    flex: 0 0 var(--default-row-height);
-    padding: 0 var(--cell-padding);
+    padding: 0.15rem;
     display: flex;
+    gap: 0.3rem;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    gap: var(--cell-spacing);
-    background-color: var(--grid-background-alt);
+    cursor: pointer;
   }
   .option:hover,
   .option.focused {
     background-color: var(--spectrum-global-color-gray-200);
+    border-radius: 4px;
   }
 </style>

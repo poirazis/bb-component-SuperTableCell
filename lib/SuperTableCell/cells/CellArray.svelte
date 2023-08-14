@@ -1,22 +1,19 @@
 <script>
   import { createEventDispatcher, onMount } from 'svelte'
+  import Multiselect from "../../../node_modules/@budibase/bbui/src/Form/Core/Multiselect.svelte";
+  import ActionButton from "../../../node_modules/@budibase/bbui/src/ActionButton/ActionButton.svelte"
 
   export let value
-  export let editable
+  export let options
+  export let cell;
 
   const dispatch = createEventDispatcher()
-  let editing = false, original
+  let original
 
   onMount(() => {
     original = value
   })
 
-  function edit() {
-    if (editable) {
-      editing = true
-      dispatch("enterEdit")
-    }
-  }
 
   function submit(event) {
     event.preventDefault()
@@ -25,34 +22,34 @@
 		} else {
       dispatch("cancelEdit")
     }
-		
-    editing = false
   }
 
   function keydown(event) {
     if (event.key == 'Escape') {
       event.preventDefault()
       value = original
-      editing = false
       dispatch("cancelEdit")
     } else if ( event.key == "Enter" ) {
       event.preventDefault()
-      editing = false
       dispatch('submit', { newValue: value })
     }
   }
-	
-	function focus(element) {
-		element.focus()
-	}
+
+  function cancelEdit ( e ) {
+    e.preventDefault(); 
+    e.stopPropagation(); 
+    dispatch("cancelEdit");
+  }
 </script>
 
-  {#if editing}
-    <input 
-    class="inline-edit" on:keydown={keydown} bind:value on:blur={submit} use:focus/>
+  {#if $cell === "Editing" }
+    <div class="editing" on:keydown={keydown} >
+      <Multiselect {value} {options}  on:change={ (e) => value = e.detail }/>
+      <ActionButton icon = "Checkmark" on:click={ (e) => { e.preventDefault(); e.stopPropagation(); dispatch("submit" ); } }/> 
+      <ActionButton icon = "Cancel" on:click={cancelEdit} /> 
+    </div>
   {:else}
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div on:click={edit} class="inline-value">
+    <div class="inline-value">
        {#each value as item }
           <div class="item"> {item} </div>
        {/each} 
@@ -60,6 +57,12 @@
   {/if}
 
 <style>
+  .editing {
+    display: flex;
+    justify-content: center;
+  }
+
+
   .inline-value { 
     width: 100%;
     height: 100%;

@@ -61,14 +61,7 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="super-table-cell" use:styleable={styles}>
-  <!-- Check valid placement  -->
-  {#if !columnContext}
-    <p>
-      Super Table Cells need to be placed inside Super Table Column Components
-    </p>
-  {:else}
     <SuperTableCell {rowKey} {value} />
-  {/if}
 </div>
 
 <style>
