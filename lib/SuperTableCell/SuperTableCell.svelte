@@ -80,10 +80,7 @@
 
   function handleChange( e ) {
     value = e.detail.value 
-    console.log(value)
   }
-
-  console.log(valueTemplate)
 </script>
 
 <!-- Will Reder Different CellTypes depending on the column type or manual override -->
@@ -98,27 +95,39 @@
 >
   {#if fieldSchema.type === "string"}
     <CellString
-      {cellState}
-      value = {getCellValue(value, valueTemplate)}
+      inEdit = { $cellState == "Editing"}
+      {value}
+      formattedValue = { getCellValue(value, valueTemplate) }
+      on:change={handleChange}
     />
   {:else if fieldSchema.type === "number"}
     <CellNumber
       inEdit = { $cellState == "Editing"}
-      on:change={handleChange}
       {value}
       formattedValue = { getCellValue(value, valueTemplate) }
+      on:change={handleChange}
+    />
+  {:else if fieldSchema.type === "bigint"}
+    <CellNumber
+      inEdit = { $cellState == "Editing"}
+      {value}
+      formattedValue = { getCellValue(value, valueTemplate) }
+      on:change={handleChange}
     />
   {:else if fieldSchema.type === "datetime"}
     <CellDatetime
       inEdit = { $cellState == "Editing"}
-      on:change={handleChange}
       {value}
+      formattedValue = { getCellValue(value, valueTemplate) }
+      on:change={handleChange}
     />
   {:else if fieldSchema.type === "link"}
     <CellLink
-      {cellState}
-      editable={false}
+      inEdit = { $cellState == "Editing"}
       {value}
+      formattedValue = { getCellValue(value, valueTemplate) }
+      on:change={handleChange}
+      {fieldSchema}
     />
   {:else if fieldSchema.type === "boolean"}
     <CellBoolean
@@ -156,23 +165,17 @@
 <style>
   .superTableCell {
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
+    justify-content: stretch;
+    align-items: stretch;
     background: transparent;
     color: var(--super-column-color);
+    width: 100%;
+    height: 100%;
+    max-height: 2.5rem;
   }
-
   .inEdit {
     border-width: 1px;
     border-style: solid;
     border-color: var(--spectrum-alias-border-color-mouse-focus);
-  }
-
-  .focused {
-    border-width: 1px;
-    border-style: solid;
-    border-color: yellowgreen;
   }
 </style>

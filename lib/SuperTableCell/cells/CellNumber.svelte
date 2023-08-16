@@ -42,7 +42,7 @@
   {#if inEdit }
     <input class="inline-edit" inputmode="numeric" bind:value use:focus on:keydown={keydown} on:blur={submit}/>
   {:else}
-    <div class="inline-value"> { formattedValue || value } </div>
+    <div class="inline-value"> { formattedValue || value || "" } </div>
   {/if}
 </div>
 
@@ -50,13 +50,12 @@
   .control {
     flex: auto;
     display: flex;
-    align-items: center;
-    justify-content: flex-end;
+    align-items: stretch;
+    justify-content: stretch;
   }
 
   .inline-value { 
-    flex: 0 1;
-    min-width: none;
+    flex: auto;
     display: flex;
     justify-content: flex-end;
     align-items: center;

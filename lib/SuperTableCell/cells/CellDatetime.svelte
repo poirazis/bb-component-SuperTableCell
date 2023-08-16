@@ -4,12 +4,10 @@
 
   export let value
   export let inEdit = false
+  export let formattedValue
 
   const dispatch = createEventDispatcher()
-  let editing = false, original
 
-
-  $: fmtDate = new Date(value)
 </script>
 
 <div class="control" class:inEdit>
@@ -17,7 +15,7 @@
     <DatePicker {value} on:change={(e) => dispatch("change", {value : e.detail } ) } />
   {:else}
     <div class="inline-value"> 
-      {fmtDate.toLocaleDateString('en-us', { day:"numeric", year:"numeric", month:"long"}) } 
+      { formattedValue || value || "" }
     </div>
   {/if}
 </div>
@@ -33,21 +31,21 @@
     border: none;
   }
   .control {
-    min-height: 2rem;
+    flex-grow: 1;
     display: flex;
-    align-items: stretch;
+    align-items: center;
   }
 
  .inEdit {
     background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
   }
   .inline-value { 
-    flex: auto;
+    flex-grow: 1;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
     white-space: nowrap;
     padding-left: var(--super-table-cell-padding);
     padding-right: var(--super-table-cell-padding);
+    justify-content: var(--super-column-alignment);
+    align-items: center;
   }
 </style>

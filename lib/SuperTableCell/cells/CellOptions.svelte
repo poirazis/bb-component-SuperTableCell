@@ -13,6 +13,7 @@
   export let placeholder = multi ? "Choose some options" : "Choose an option"
 
   let anchor
+  let allowNull = fieldSchema.constraints.presence ?? false
 
   let editorState = fsm ( "Closed", {
     Open: { toggle: "Closed" },
@@ -32,12 +33,19 @@
   $: optionColors = fieldSchema?.optionColors || {}
   $: if (!inEdit && $editorState == "Open") editorState.toggle();
 
-
   const getOptionColor = value => {
     return "darkcyan";
   }
 
   function toggleOption (option) { 
+    if ( option == "_clearSelection" ) {
+      value = multi ? [] : null
+      dispatch("change", { value : value } ) 
+      editorState.toggle();
+      return
+    }
+
+
     if ( !multi ) {
       value = [option]
       editorState.toggle()
@@ -67,6 +75,8 @@
     }
     return true
   }
+
+  $: console.log(allowNull)
 
 </script>
 
@@ -104,11 +114,20 @@
   {/if}
 
   <Popover on:close={editorState.toggle} {anchor} open={$editorState == "Open"}>
-      <div
-        class="options"
-        on:wheel={e => e.stopPropagation()}
-      >
+      <div class="options" on:wheel={e => e.stopPropagation()} >
+        {#if !allowNull}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <div
+          class="option"
+          on:click|stopPropagation={() => toggleOption("_clearSelection")}
+        >
+          <div class="option text">
+            <Icon name="Cancel" size="S" color={"var(--primaryColor)"}/>
+              None
+          </div>
+        </div>
 
+        {/if}
         {#each options as option, idx}
           {@const color = optionColors[option] || getOptionColor(option)}
           <!-- svelte-ignore a11y-click-events-have-key-events -->

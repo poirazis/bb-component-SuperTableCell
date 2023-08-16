@@ -2,7 +2,9 @@
   import { createEventDispatcher, onMount } from 'svelte'
 
   export let value
-  export let editable
+  export let inEdit
+  export let formattedValue
+  export let fieldSchema
 
   const dispatch = createEventDispatcher()
   let editing = false, original
@@ -11,48 +13,20 @@
     original = value
   })
 
-  function edit() {
-    if (editable) {
-      editing = true
-      dispatch("enterEdit")
-    }
-  }
-
-  function submit(event) {
-    event.preventDefault()
-		if (value != original) {
-			dispatch('submit', { newValue: value })
-		} else {
-      dispatch("cancelEdit")
-    }
-		
-    editing = false
-  }
-
-  function keydown(event) {
-    if (event.key == 'Escape') {
-      event.preventDefault()
-      value = original
-      editing = false
-      dispatch("cancelEdit")
-    } else if ( event.key == "Enter" ) {
-      event.preventDefault()
-      editing = false
-      dispatch('submit', { newValue: value })
-    }
-  }
-	
-	function focus(element) {
-		element.focus()
-	}
 </script>
 
-  {#if editing}
-    <input 
-    class="inline-edit" on:keydown={keydown} bind:value on:blur={submit} use:focus/>
+<div class="control">
+  {#if inEdit}
+    <div class="inline-value">
+      {#if value}
+        {#each value as row }
+          <div class="item"> {row.primaryDisplay}</div>
+        {/each}
+      {/if}
+    </div>
   {:else}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div on:click={edit} class="inline-value">
+    <div class="inline-value">
       {#if value}
         {#each value as row }
           <div class="item"> {row.primaryDisplay}</div>
@@ -60,8 +34,15 @@
       {/if}
     </div>
   {/if}
+</div>
 
 <style>
+  .control {
+    flex: auto;
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
+  }
   .inline-value { 
     width: 100%;
     height: 100%;
@@ -81,7 +62,7 @@
     border-radius: 4px;
     background-color: #3E6990;
     color: white;
-    height: 50%;
+    height: 60%;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
     max-height: 1.85rem;
