@@ -1,90 +1,91 @@
 <script>
-  import Icon from "../../../node_modules/@budibase/bbui/src/Icon/Icon.svelte"
+  import Icon from "../../../node_modules/@budibase/bbui/src/Icon/Icon.svelte";
   import Popover from "../../../node_modules/@budibase/bbui/src/Popover/Popover.svelte";
-  import fsm from "svelte-fsm"
-  import { createEventDispatcher } from "svelte"
+  import fsm from "svelte-fsm";
+  import { createEventDispatcher } from "svelte";
 
   const dispatch = createEventDispatcher();
 
-  export let value
-  export let fieldSchema
-  export let inEdit = false
-  export let multi = false
-  export let placeholder = multi ? "Choose some options" : "Choose an option"
+  export let value;
+  export let fieldSchema;
+  export let inEdit = false;
+  export let multi = false;
+  export let placeholder = multi ? "Choose some options" : "Choose an option";
 
-  let anchor
-  let allowNull = fieldSchema.constraints.presence ?? false
+  let anchor;
+  let allowNull = fieldSchema.constraints.presence ?? false;
 
-  let editorState = fsm ( "Closed", {
+  let editorState = fsm("Closed", {
     Open: { toggle: "Closed" },
-    Closed: { toggle: "Open" }
-  } )
+    Closed: { toggle: "Open" },
+  });
 
-  let focusedOptionIdx = null
-  
-  /** 
+  let focusedOptionIdx = null;
+
+  /**
    * Make sure value is always an array
-  */
-  $: value = multi  
-           ? value ? value : []
-           : value ? [value] : []
+   */
+  $: value = multi ? (value ? value : []) : value ? [value] : [];
 
-  $: options = fieldSchema?.constraints?.inclusion || []
-  $: optionColors = fieldSchema?.optionColors || {}
+  $: options = fieldSchema?.constraints?.inclusion || [];
+  $: optionColors = fieldSchema?.optionColors || {};
   $: if (!inEdit && $editorState == "Open") editorState.toggle();
 
-  const getOptionColor = value => {
+  const getOptionColor = (value) => {
     return "darkcyan";
-  }
+  };
 
-  function toggleOption (option) { 
-    if ( option == "_clearSelection" ) {
-      value = multi ? [] : null
-      dispatch("change", { value : value } ) 
+  function toggleOption(option) {
+    if (option == "_clearSelection") {
+      value = multi ? [] : null;
+      dispatch("change", { value: value });
       editorState.toggle();
-      return
+      return;
     }
 
-
-    if ( !multi ) {
-      value = [option]
-      editorState.toggle()
-    }
-    else {
-      if ( value.includes( option ) ) {
-        value.splice(value.indexOf(option), 1)
-        value = value
+    if (!multi) {
+      value = [option];
+      editorState.toggle();
+    } else {
+      if (value.includes(option)) {
+        value.splice(value.indexOf(option), 1);
+        value = value;
       } else {
-        value=[...value,option]
+        value = [...value, option];
       }
     }
-    dispatch("change", { value : value } ) 
+    dispatch("change", { value: value });
   }
 
-  const onKeyDown = e => {
+  const onKeyDown = (e) => {
     if (!isOpen) {
-      return false
+      return false;
     }
-    e.preventDefault()
+    e.preventDefault();
     if (e.key === "ArrowDown") {
-      focusedOptionIdx = Math.min(focusedOptionIdx + 1, options.length - 1)
+      focusedOptionIdx = Math.min(focusedOptionIdx + 1, options.length - 1);
     } else if (e.key === "ArrowUp") {
-      focusedOptionIdx = Math.max(focusedOptionIdx - 1, 0)
+      focusedOptionIdx = Math.max(focusedOptionIdx - 1, 0);
     } else if (e.key === "Enter") {
-      toggleOption(options[focusedOptionIdx])
+      toggleOption(options[focusedOptionIdx]);
     }
-    return true
-  }
-
-  $: console.log(allowNull)
-
+    return true;
+  };
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div class="control" bind:this={anchor} on:click={ (e) => { if (inEdit) { e.stopPropagation(); editorState.toggle()} }}>
-
+<div
+  class="control"
+  bind:this={anchor}
+  on:click={(e) => {
+    if (inEdit) {
+      e.stopPropagation();
+      editorState.toggle();
+    }
+  }}
+>
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="inline-value" class:inEdit >
+  <div class="inline-value" class:inEdit>
     {#if value.length < 1 && inEdit}
       <span class="placeholder">{placeholder}</span>
     {:else}
@@ -105,54 +106,50 @@
     {/if}
   </div>
 
-
-  {#if inEdit }
+  {#if inEdit}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div class="arrow" >
+    <div class="arrow">
       <Icon name="ChevronDown" />
     </div>
   {/if}
 
   <Popover on:close={editorState.toggle} {anchor} open={$editorState == "Open"}>
-      <div class="options" on:wheel={e => e.stopPropagation()} >
-        {#if !allowNull}
+    <div class="options" on:wheel={(e) => e.stopPropagation()}>
+      {#if !allowNull}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="option"
           on:click|stopPropagation={() => toggleOption("_clearSelection")}
         >
           <div class="option text">
-            <Icon name="Cancel" size="S" color={"var(--primaryColor)"}/>
-              None
+            <Icon name="Cancel" size="S" color={"var(--primaryColor)"} />
+            None
           </div>
         </div>
-
-        {/if}
-        {#each options as option, idx}
-          {@const color = optionColors[option] || getOptionColor(option)}
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <div
-            class="option"
-            on:click|stopPropagation={() => toggleOption(option)}
-            class:focused={focusedOptionIdx === idx}
-            on:mouseenter={() => (focusedOptionIdx = idx)}
-          >
-            <div class="option text">
-              <Icon name="LoupeView" size="S" {color}/>
-              {option}
-            </div>
-            {#if value?.includes(option)}
-              <Icon name="Checkmark" size="S" color="var(--primaryColor)" />
-            {/if}
+      {/if}
+      {#each options as option, idx}
+        {@const color = optionColors[option] || getOptionColor(option)}
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <div
+          class="option"
+          on:click|stopPropagation={() => toggleOption(option)}
+          class:focused={focusedOptionIdx === idx}
+          on:mouseenter={() => (focusedOptionIdx = idx)}
+        >
+          <div class="option text">
+            <Icon name="LoupeView" size="S" {color} />
+            {option}
           </div>
-        {/each}
-
-      </div>
+          {#if value?.includes(option)}
+            <Icon name="Checkmark" size="S" color="var(--primaryColor)" />
+          {/if}
+        </div>
+      {/each}
+    </div>
   </Popover>
 </div>
 
 <style>
-
   .control {
     flex: auto;
     display: flex;
@@ -160,7 +157,7 @@
     cursor: pointer;
   }
 
-.inline-value { 
+  .inline-value {
     flex: auto;
     display: flex;
     flex-direction: row;
@@ -175,7 +172,10 @@
     color: var(--spectrum-global-color-gray-600);
   }
   .inEdit {
-    background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
+    background-color: var(
+      --spectrum-textfield-m-background-color,
+      var(--spectrum-global-color-gray-50)
+    );
   }
 
   .item {
@@ -204,7 +204,10 @@
     place-items: center;
     padding-left: 0.3rem;
     padding-right: 0.3rem;
-    background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
+    background-color: var(
+      --spectrum-textfield-m-background-color,
+      var(--spectrum-global-color-gray-50)
+    );
   }
   .options {
     display: flex;
