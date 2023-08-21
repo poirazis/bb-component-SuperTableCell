@@ -13,7 +13,6 @@
   import CellOptions from "./cells/CellOptions.svelte";
   import CellNumber from "./cells/CellNumber.svelte";
 
-
   const columnContext = getContext("columnContext");
   const tableDataChangesStore = getContext("tableDataChangesStore");
 
@@ -88,7 +87,6 @@
 <div 
   class="superTableCell"
   class:inEdit={$cellState === "Editing"}
-  tabIndex="0"
   on:click={ () => { cellState.focus();  } }
   on:keydown={handleKeyboard}
   use:clickOutside={ cellState.unfocus }
@@ -96,6 +94,13 @@
   {#if fieldSchema.type === "string"}
     <CellString
       inEdit = { $cellState == "Editing"}
+      {value}
+      formattedValue = { getCellValue(value, valueTemplate) }
+      on:change={handleChange}
+    />
+  {:else if fieldSchema.type === "formula"}
+    <CellString
+      inEdit = { false }
       {value}
       formattedValue = { getCellValue(value, valueTemplate) }
       on:change={handleChange}
@@ -159,8 +164,6 @@
     />
   {/if}
 </div>
-
-
 
 <style>
   .superTableCell {

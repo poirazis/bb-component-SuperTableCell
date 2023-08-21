@@ -4,7 +4,7 @@
   import fsm from "svelte-fsm";
   import { getContext, createEventDispatcher } from "svelte";
   import CellSkeleton from "./CellSkeleton.svelte";
-
+	import { fly } from 'svelte/transition';
   const dispatch = createEventDispatcher();
   const { API } = getContext("sdk");
 
@@ -67,7 +67,7 @@
     value = value
   }
 
-  const unselectRow = ( e, val ) => {
+  const unselectRow = ( e, val, idx ) => {
     e.stopPropagation();
     value.splice( value.findIndex ( (e) => e._id === val._id  ), 1 );
     value = value;
@@ -100,6 +100,7 @@
   }
 
   function focus(element) {
+    console.log("Focus")
 		element.focus()
 	}
 
@@ -115,10 +116,11 @@
   {#if inEdit}
     <div class="inline-value">
       {#if value}
-        {#each value as row }
-          <div class="item">
+        {#each value as row, idx }
+          <div class="item" 
+            in:fly={ $editorState == "Open" ? { x: -50, duration: 130 } : { duration: 0} }          >
             {row.primaryDisplay}
-            <Icon size="XS" name="Unlink" hoverable color={"var(--spectrum-global-color-gray-50)"} on:click={ (e) => unselectRow(e, row)}/>
+            <Icon size="XS" name="Unlink" hoverable color={"var(--spectrum-global-color-gray-50)"} on:click={ (e) => unselectRow(e, row, idx)}/>
           </div>
         {/each}
       {/if}
@@ -138,7 +140,7 @@
           <div class="columnSelect">
             {searchColumn}
           </div>
-          <input class="input" on:input={debounce} type="text" use:focus/>
+          <input class="input" on:input={debounce} type="text" use:focus placeholder="Search..."/>
           <div class="pageSize">
             <div class="pageSizeItem" class:selected={limit == 10} on:click={(e) => setLimit(e, 10)}> 10 </div>
             <div class="pageSizeItem" class:selected={limit == 50} on:click={(e) => setLimit(e, 50)}> 50 </div>
@@ -148,9 +150,11 @@
         </div>
         <div class="options"> 
           {#await results}
-            <CellSkeleton > Loading... </CellSkeleton>
-            <CellSkeleton > Loading... </CellSkeleton>
-            <CellSkeleton > Loading... </CellSkeleton>
+          <div class="option"> <CellSkeleton > <div class="option text"> Loading ... </div> </CellSkeleton> </div>
+          <div class="option"> <CellSkeleton > <div class="option text"> Loading ... </div> </CellSkeleton> </div>
+          <div class="option"> <CellSkeleton > <div class="option text"> Loading ... </div> </CellSkeleton> </div>
+          <div class="option"> <CellSkeleton > <div class="option text"> Loading ... </div> </CellSkeleton> </div>
+          <div class="option"> <CellSkeleton > <div class="option text"> Loading ... </div> </CellSkeleton> </div>
           {:then results}
             {#key value}
               {#if results.rows.length > 0 }
@@ -158,7 +162,7 @@
                   {#if !(rowSelected(row)) }
                     <!-- svelte-ignore a11y-click-events-have-key-events -->
                     <div class="option" on:click={selectRow(row)} >
-                      <Icon name="Link" size="S" color={"var(--primaryColor)"} />
+
                       <div class="option text">
                          {row[searchColumn]}
                       </div>
@@ -285,6 +289,7 @@
     justify-content: flex-start;
     align-items: center;
     cursor: pointer;
+    gap: 0.3rem;
   }
 
  :global(.option > span) {
