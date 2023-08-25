@@ -1,60 +1,18 @@
 <script>
   import { createEventDispatcher, onMount } from 'svelte'
-  import { clickOutsideAction } from "svelte-legos";
   import Switch from "../../../node_modules/@budibase/bbui/src/Form/Core/Switch.svelte"
   import Icon from "../../../node_modules/@budibase/bbui/src/Icon/Icon.svelte"
 
   export let value
   export let inEdit
-  export let editable
 
   const dispatch = createEventDispatcher()
-  let editing = false, original
 
-  onMount(() => {
-    original = value
-  })
+  $: dispatch("change", { value : value} )
 
-  function edit() {
-    if (editable) {
-      editing = true
-      dispatch("enterEdit")
-    }
-  }
-
-  function submit(event) {
-    event.preventDefault()
-		if (value != original) {
-			dispatch('submit', { newValue: value })
-		} else {
-      dispatch("cancelEdit")
-    }
-		
-    editing = false
-  }
-
-  function keydown(event) {
-    if (event.key == 'Escape') {
-      event.preventDefault()
-      value = original
-      editing = false
-      dispatch("cancelEdit")
-    } else if ( event.key == "Enter" ) {
-      event.preventDefault()
-      editing = false
-      dispatch('submit', { newValue: value })
-    }
-  }
-	
-	function focus(element) {
-		element.focus()
-	}
-
-  function cancelEdit() {
-    editing = false;
-    dispatch("cancelEdit");
-  }
 </script>
+
+<div class="control" class:inEdit> 
   {#if !inEdit}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div class="inline-value" > 
@@ -63,26 +21,27 @@
     {/if}
   </div>
   {:else}
-  <div 
-    class="inline-value"
-    class:inEdit
-  > 
-    <Switch {value} on:change={(e) => dispatch("change", { value: e.detail } )}/>
-  </div>
+    <div class="inline-value" > 
+      <Switch {value} on:change={(e) => dispatch("change", { value: e.detail } )}/>
+    </div>
   {/if}
-
+</div>
 
 <style>
   .inline-value { 
-    width: 100%;
-    height: 100%;
+    flex: auto;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: var(--super-column-alignment);
-    white-space: nowrap;
+    justify-content: var(--super-column-alignment);
+    align-items: center;
     padding-left: var(--super-table-cell-padding);
     padding-right: var(--super-table-cell-padding);
+  }
+
+  .control {
+    flex: auto;
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
   }
 
   .inEdit {

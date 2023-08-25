@@ -111,7 +111,7 @@
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div bind:this={anchor} class="control">
+<div bind:this={anchor} class="control" class:inEdit >
 
   {#if inEdit}
     <div class="inline-value">
@@ -197,8 +197,12 @@
     align-items: stretch;
     justify-content: stretch;
   }
+
+  .inEdit {
+    background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
+  }
   .inline-value {
-    flex: auto;
+    flex: 1 1 auto;
     display: flex;
     justify-content: flex-start;
     align-items: center;

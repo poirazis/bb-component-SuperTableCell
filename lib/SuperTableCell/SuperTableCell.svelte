@@ -98,6 +98,13 @@
       formattedValue = { getCellValue(value, valueTemplate) }
       on:change={handleChange}
     />
+  {:else if fieldSchema.type === "longform"}
+    <CellString
+      inEdit = { $cellState == "Editing"}
+      {value}
+      formattedValue = { getCellValue(value, valueTemplate) }
+      on:change={handleChange}
+    />
   {:else if fieldSchema.type === "formula"}
     <CellString
       inEdit = { false }
