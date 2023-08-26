@@ -40,7 +40,7 @@
 
 <div class="control">
   {#if inEdit }
-    <input class="inline-edit" inputmode="numeric" bind:value use:focus on:keydown={keydown} on:blur={submit}/>
+    <input class="inline-edit" type="text" inputmode="numeric" bind:value use:focus on:keydown={keydown} on:blur={submit}/>
   {:else}
     <div class="inline-value"> { formattedValue || value || "" } </div>
   {/if}

@@ -4,6 +4,7 @@
   export let value
   export let inEdit
   export let formattedValue
+  export let padded = true 
 
   const dispatch = createEventDispatcher()
 
@@ -15,43 +16,61 @@
 
 </script>
 
-<div class="control">
+<div class="control" class:inEdit>
   {#if inEdit }
-    <input class="inline-edit" placeholder="Search..." bind:value use:focus/>
+    <input class="inline-edit" class:padded placeholder="Search..." bind:value use:focus />
   {:else}
-    <div class="inline-value"> {formattedValue || value || "" } </div>
+    <div class="value"> {formattedValue || value || "" } </div>
   {/if}
 </div>
 
 <style>
   .control {
-    flex: auto;
+    width: 100%;
+    height: 100%;
     display: flex;
-    align-items: stretch;
-    justify-content: stretch;
-  }
-  .inline-value { 
-    flex: 1;
-    display: flex;
-    align-items:  center;
-    justify-content: var(--super-column-alignment);
-    padding-left: var(--super-table-cell-padding);
-    padding-right: var(--super-table-cell-padding);
-    white-space: nowrap;
+    align-items: center;
+    justify-content: var(--super-column-alignment);;
+    transition: all 130ms;
     overflow: hidden;
+    white-space: nowrap;
     text-overflow: ellipsis;
   }
-  input.inline-edit {
-    flex: auto;
-    box-sizing: border-box;
+  .inEdit {
+    background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
+  }
+
+  .value {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
     padding-left: var(--super-table-cell-padding);
     padding-right: var(--super-table-cell-padding);
+  }
+  .inline-edit {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
     outline: none;
     background: none;
     color: inherit;
     border: none;
-
     cursor: pointer;
-    background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
+    overflow: hidden;
+    min-width: unset;
+  }
+
+  .inline-edit:focus {
+    min-width: unset;;
+  }
+
+  .inline-edit::placeholder {
+    color: var(--primaryColor);
+    font-style: italic;
+  }
+
+  .padded {
+    padding-left: var(--super-table-cell-padding);
+    padding-right: var(--super-table-cell-padding);
   }
 </style>

@@ -181,7 +181,6 @@
     color: var(--super-column-color);
     width: 100%;
     height: 100%;
-    max-height: 2.5rem;
   }
   .inEdit {
     border-width: 1px;

@@ -113,7 +113,7 @@
     </div>
   {/if}
 
-  <Popover on:close={editorState.toggle} {anchor} open={$editorState == "Open"}>
+  <Popover on:close={editorState.toggle} {anchor} align={"left"} open={$editorState == "Open"}>
     <div class="options" on:wheel={(e) => e.stopPropagation()}>
       {#if !allowNull}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -169,6 +169,7 @@
 
   .inline-value .placeholder {
     font-style: italic;
+    white-space: nowrap;
     color: var(--spectrum-global-color-gray-600);
   }
   .inEdit {
