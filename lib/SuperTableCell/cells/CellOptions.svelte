@@ -155,6 +155,7 @@
     display: flex;
     align-items: stretch;
     cursor: pointer;
+    overflow: hidden;
   }
 
   .inline-value {

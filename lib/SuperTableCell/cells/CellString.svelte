@@ -48,8 +48,7 @@
     padding-right: var(--super-table-cell-padding);
   }
   .inline-edit {
-    width: 100%;
-    height: 100%;
+    flex: auto;
     box-sizing: border-box;
     outline: none;
     background: none;
@@ -57,7 +56,6 @@
     border: none;
     cursor: pointer;
     overflow: hidden;
-    min-width: unset;
   }
 
   .inline-edit:focus {
