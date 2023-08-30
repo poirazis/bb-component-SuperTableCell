@@ -10,17 +10,18 @@
   export let fieldSchema;
   export let inEdit = false;
   export let multi = false;
-  export let placeholder = multi ? "Choose some options" : "Choose an option";
+  export let useOptionColors = false
+  export let defaultOptionColor = "darkcyan"
+  export let placeholder = multi ? "Choose options" : "Choose an option";
 
   let anchor;
   let allowNull = fieldSchema.constraints.presence ?? false;
+  let focusedOptionIdx = null;
 
   let editorState = fsm("Closed", {
     Open: { toggle: "Closed" },
     Closed: { toggle: "Open" },
   });
-
-  let focusedOptionIdx = null;
 
   /**
    * Make sure value is always an array
@@ -57,25 +58,16 @@
     dispatch("change", { value: value });
   }
 
-  const onKeyDown = (e) => {
-    if (!isOpen) {
-      return false;
-    }
-    e.preventDefault();
-    if (e.key === "ArrowDown") {
-      focusedOptionIdx = Math.min(focusedOptionIdx + 1, options.length - 1);
-    } else if (e.key === "ArrowUp") {
-      focusedOptionIdx = Math.max(focusedOptionIdx - 1, 0);
-    } else if (e.key === "Enter") {
-      toggleOption(options[focusedOptionIdx]);
-    }
-    return true;
-  };
+  function handleKeyboard ( e ) {
+    console.log( "KeyPress ", e.key )
+  }
+
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
   class="control"
+  on:keypress={handleKeyboard}
   bind:this={anchor}
   on:click={(e) => {
     if (inEdit) {

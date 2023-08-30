@@ -4,6 +4,7 @@
   export let value
   export let inEdit
   export let formattedValue
+  export let width
   export let padded = true 
 
   const dispatch = createEventDispatcher()
@@ -16,9 +17,9 @@
 
 </script>
 
-<div class="control" class:inEdit>
+<div class="control" class:inEdit style:width>
   {#if inEdit }
-    <input class="inline-edit" class:padded placeholder="Search..." bind:value use:focus />
+    <input style:width class="inline-edit" class:padded placeholder="Search..." bind:value use:focus />
   {:else}
     <div class="value"> {formattedValue || value || "" } </div>
   {/if}
@@ -48,7 +49,6 @@
     padding-right: var(--super-table-cell-padding);
   }
   .inline-edit {
-    flex: auto;
     box-sizing: border-box;
     outline: none;
     background: none;

@@ -21,15 +21,14 @@
   export let editable
   export let fieldSchema
   export let valueTemplate
-
+  export let submitOn = "onEnter"
 
   export let fontColor, fontSize, isBold, isUnderline, isItalic;
   export let valueColor;
 
   let originalValue = value
-  let focused;
-  let editorState
-  let formattedValue
+  let tableCell
+  let width
 
   const getCellValue = (value, template) => {
     if (!valueTemplate) {
@@ -45,58 +44,74 @@
     View: { focus() { if (editable) {return "Editing"} else {return "Focused"} } },
     Focused: { unfocus: "View"},
     Error: { check : "View" },
-    Editing: { submit( e ) { value = e.detail.value ; return "View" }, unfocus: "View" }
+    Editing: { 
+      _enter() { width = tableCell.clientWidth - 2 },
+      submit() { if ( value != originalValue ) acceptChange() ; return "View" }, 
+      cancel() { value = originalValue; return "View" }}
   } )
 
   function acceptChange ( ) { 
     let newDataChange = {
-      rowKey: rowKey,
-      field: columnContext?.columnField,
+      rowID: rowKey,
+      field: fieldSchema.name,
       originalValue: originalValue,
-      newValue: event.detail.newValue,
+      newValue: value
     };
 
     // Get all other dataChanges, removing any previous changes of ours
     let dataChanges = $tableDataChangesStore.filter(
-      (v) => v.rowKey != rowKey || v.field != columnContext?.columnField
+      (v) => v.rowKey != rowKey || v.field != fieldSchema.name
     );
 
     $tableDataChangesStore = [...dataChanges, newDataChange];
   }
-  function cancelChange ( ) { value = originalValue } 
 
   function handleKeyboard ( e ) {
-
     if ( e.key == "Escape" ) {
-      cellState.unfocus();
-      cancelChange();
+      cellState.cancel();
     } else if (e.key == "Enter" ) {
-      cellState.unfocus();
-      acceptChange()
+      cellState.submit();
     }
-
   }
 
-  function handleChange( e ) {
-    value = e.detail.value 
+  function handleUnfocus () {
+    if ( submitOn != "onBlur" ) 
+      cellState.cancel();
+    else 
+      cellState.submit();
+  }
+
+  function handleFocus () {
+    if ( $cellState != "View") 
+      cellState.cancel()
+    else
+      cellState.focus()
+  }
+
+  function handleChange ( e ) {
+    value = e.detail.value
   }
 </script>
 
 <!-- Will Reder Different CellTypes depending on the column type or manual override -->
 <!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 <div 
   class="superTableCell"
   class:inEdit={$cellState === "Editing"}
-  on:click={ () => { cellState.focus();  } }
-  on:keydown={handleKeyboard}
-  use:clickOutside={ cellState.unfocus }
+  tabindex="0"
+  bind:this={tableCell}
+  on:click={ handleFocus } 
+  on:keydown={ handleKeyboard }
+  use:clickOutside={ handleUnfocus }
 >
   {#if fieldSchema.type === "string"}
     <CellString
       inEdit = { $cellState == "Editing"}
+      {width}
       {value}
       formattedValue = { getCellValue(value, valueTemplate) }
-      on:change={handleChange}
+      on:change={ handleChange }
     />
   {:else if fieldSchema.type === "longform"}
     <CellString
@@ -158,8 +173,7 @@
   {:else if fieldSchema.type === "options"}
     <CellOptions
       on:change={handleChange}
-      bind:editorState
-      inEdit = {$cellState == "Editing" }
+      inEdit = { $cellState == "Editing" }
       {value}
       {fieldSchema}
     />

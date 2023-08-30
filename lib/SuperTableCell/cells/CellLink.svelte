@@ -100,7 +100,6 @@
   }
 
   function focus(element) {
-    console.log("Focus")
 		element.focus()
 	}
 
