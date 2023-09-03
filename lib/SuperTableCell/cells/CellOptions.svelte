@@ -33,7 +33,7 @@
   $: if (!inEdit && $editorState == "Open") editorState.toggle();
 
   const getOptionColor = (value) => {
-    return "darkcyan";
+    return "var(--primaryColor)";
   };
 
   function toggleOption(option) {

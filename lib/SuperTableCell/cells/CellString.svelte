@@ -4,49 +4,48 @@
   export let value
   export let inEdit
   export let formattedValue
-  export let width
-  export let padded = true 
+  export let width 
+  export let padded = false
+  export let placeholder = "Enter ... "
 
   const dispatch = createEventDispatcher()
 
-  $: dispatch('change', { value: value} )
-
-  function focus ( element ) {
-    element.focus();
+  const sendChanges = ( e ) => {
+    dispatch( "change", { value: value } )
   }
 
 </script>
 
-<div class="control" class:inEdit style:width>
+<div class="control" class:inEdit style:width >
   {#if inEdit }
-    <input style:width class="inline-edit" class:padded placeholder="Search..." bind:value use:focus />
+    <input on:keypress={sendChanges} class="inline-edit" class:padded {placeholder} bind:value />
   {:else}
-    <div class="value"> {formattedValue || value || "" } </div>
+    <p class="value"> {formattedValue || value || "" } </p>
   {/if}
 </div>
 
 <style>
   .control {
-    width: 100%;
-    height: 100%;
+    flex: auto;
     display: flex;
     align-items: center;
-    justify-content: var(--super-column-alignment);;
+    justify-content: var(--super-column-alignment);
     transition: all 130ms;
     overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    box-sizing: border-box;
+    padding-left: var(--super-table-cell-padding);
+    padding-right: var(--super-table-cell-padding);
+    min-width: 0;
   }
   .inEdit {
     background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
   }
 
   .value {
+    box-sizing: border-box;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    padding-left: var(--super-table-cell-padding);
-    padding-right: var(--super-table-cell-padding);
   }
   .inline-edit {
     box-sizing: border-box;

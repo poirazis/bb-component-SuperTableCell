@@ -2,191 +2,75 @@
   import Icon from "../../../node_modules/@budibase/bbui/src/Icon/Icon.svelte";
   import Popover from "../../../node_modules/@budibase/bbui/src/Popover/Popover.svelte";
   import fsm from "svelte-fsm";
-  import { getContext, createEventDispatcher } from "svelte";
-  import CellSkeleton from "./CellSkeleton.svelte";
-	import { fly } from 'svelte/transition';
-  const dispatch = createEventDispatcher();
-  const { API } = getContext("sdk");
+  import { createEventDispatcher, beforeUpdate } from "svelte";
 
-  export let value;
+	import { fly } from 'svelte/transition';
+  import CellLinkPicker from "./CellLinkPicker.svelte";
+  const dispatch = createEventDispatcher();
+
+  export let value = []
   export let inEdit;
-  export let formattedValue;
   export let fieldSchema;
+  export let isHovered = false;
 
   let anchor;
-  let results
-  let relTableSchema 
-  let relTableSeachColumn
-  let filteredValue
-  let searchColumns 
-  let primaryDisplay 
-  let queryParams = {}
-  let limit = 10
+  let overflow = false
+  let regen = false
 
   let editorState = fsm("Closed", {
     Open: { toggle: "Closed" },
     Closed: { toggle: "Open" },
   });
 
-  let timer;
-	const debounce = e => {
-    clearTimeout(timer);
-		timer = setTimeout(() => {
-      filteredValue = e.target.value;
-		}, 500);
-	} 
-
-  const loadTable = async ( tableId, filterValue, limit ) => {
-
-    queryParams = {}
-    queryParams[primaryDisplay] = filterValue ?? ""
-
-    results = API.searchTable({
-      paginate: false,
-      tableId: tableId,
-      limit: Number (limit),
-      query: { fuzzy: queryParams }
-    });
-    return results;
-  };
-
-  const loadTableSchema = async () => {
-    relTableSchema = await API.fetchTableDefinition(fieldSchema.tableId);
-    searchColumns = [ relTableSchema.primaryDisplay ]
-    primaryDisplay = relTableSchema.primaryDisplay
-    return relTableSchema;
-  }
-
-  const rowSelected = ( val ) => {
-    let found = value.find ( (e) => e._id == val._id )
-    return found
-  }
-
-  const selectRow = ( val ) => {
-    value.push ( { _id: val._id, primaryDisplay: val[relTableSchema.primaryDisplay] } )
-    value = value
-  }
-
-  const unselectRow = ( e, val, idx ) => {
-    e.stopPropagation();
-    value.splice( value.findIndex ( (e) => e._id === val._id  ), 1 );
-    value = value;
-  }
-
-  const getPreviousColumn = ( e , val ) => {
-    e.stopPropagation();
-    relTableSeachColumn = "Firt Name"
-  }
-
-  const getNextColumn = ( e , val ) => {
-    e.stopPropagation();
-    searchColumns.push ( "Customer Email" );
-    searchColumns = searchColumns;
-  }
-
-  const setLimit = (e, val ) => {
-    e.stopPropagation();
-    limit = val
+  const unselectRow = ( val ) => {
+    if ( value ) {
+      value.splice( value.findIndex ( (e) => e._id === val._id  ), 1 );
+      dispatch("change", { value: value} )
+    }
   }
 
   function openPicker(e) {
     e.stopPropagation();
     editorState.toggle();
-    if ( $editorState == "Open" ) {
-      
-      if (!relTableSchema) relTableSchema = loadTableSchema();
-      if (!results || filteredValue ) results = loadTable();
-    }
   }
 
-  function focus(element) {
-		element.focus()
-	}
-
-  $: if ( inEdit && !primaryDisplay ) loadTableSchema();
-  $: if ( $editorState == "Open" ) loadTable( fieldSchema.tableId, filteredValue , limit)
-  $: if ( !inEdit && $editorState == "Open" ) { editorState.toggle(); filteredValue = ""; }
-
+  beforeUpdate ( () => overflow = anchor ? anchor.clientWidth < anchor.scrollWidth : false )
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div bind:this={anchor} class="control" class:inEdit >
+<div bind:this={anchor} class="control" class:inEdit>
+  <div class="inline-value">
+    {#if inEdit}
+      <Icon name="Add" hoverable size="S" on:click={(e) => openPicker(e)} />
+    {/if}
 
-  {#if inEdit}
-    <div class="inline-value">
-      {#if value}
-        {#each value as row, idx }
-          <div class="item" 
-            in:fly={ $editorState == "Open" ? { x: -50, duration: 130 } : { duration: 0} }          >
-            {row.primaryDisplay}
-            <Icon size="XS" name="Unlink" hoverable color={"var(--spectrum-global-color-gray-50)"} on:click={ (e) => unselectRow(e, row, idx)}/>
-          </div>
-        {/each}
-      {/if}
-      <Icon name="Add" hoverable size="M" on:click={(e) => openPicker(e)} />
-    </div>
-
-    <Popover
-      on:close={editorState.toggle}
-      {anchor} 
-      align = "left"
-      open={$editorState == "Open"}
-    >
-      <div class="columnWrapper"> 
-      {#each searchColumns as searchColumn}
-      <div class="column">
-        <div class="searchControl">
-          <div class="columnSelect">
-            {searchColumn}
-          </div>
-          <input class="input" on:input={debounce} type="text" use:focus placeholder="Search..."/>
-          <div class="pageSize">
-            <div class="pageSizeItem" class:selected={limit == 10} on:click={(e) => setLimit(e, 10)}> 10 </div>
-            <div class="pageSizeItem" class:selected={limit == 50} on:click={(e) => setLimit(e, 50)}> 50 </div>
-            <div class="pageSizeItem" class:selected={limit == 100} on:click={(e) => setLimit(e, 100)}> 100 </div>
-            <div class="pageSizeItem" class:selected={limit == 10000} on:click={(e) => setLimit(e, 10000)}> ALL </div>
-          </div>
+    {#if value}
+      {#each value as row }
+        <div class="item" >
+          {#if inEdit}
+            <Icon size="XS" name="Unlink" hoverable color={"var(--primaryColor)"} on:click={ (e) => { e.stopPropagation(); unselectRow(row); } }/>
+          {/if}
+          {row.primaryDisplay}
         </div>
-        <div class="options"> 
-          {#await results}
-          <div class="option"> <CellSkeleton > <div class="option text"> Loading ... </div> </CellSkeleton> </div>
-          <div class="option"> <CellSkeleton > <div class="option text"> Loading ... </div> </CellSkeleton> </div>
-          <div class="option"> <CellSkeleton > <div class="option text"> Loading ... </div> </CellSkeleton> </div>
-          <div class="option"> <CellSkeleton > <div class="option text"> Loading ... </div> </CellSkeleton> </div>
-          <div class="option"> <CellSkeleton > <div class="option text"> Loading ... </div> </CellSkeleton> </div>
-          {:then results}
-            {#key value}
-              {#if results.rows.length > 0 }
-                {#each results.rows as row, idx }
-                  {#if !(rowSelected(row)) }
-                    <!-- svelte-ignore a11y-click-events-have-key-events -->
-                    <div class="option" on:click={selectRow(row)} >
-
-                      <div class="option text">
-                         {row[searchColumn]}
-                      </div>
-                    </div>
-                  {/if}
-                {/each}
-              {/if}
-            {/key}
-          {:catch error}
-            <p style="color: red">{error.message}</p>
-          {/await}
-        </div>
-      </div>
       {/each}
-    </div>
-    </Popover>
-  {:else}
-    <div class="inline-value">
-      {#if value}
-        {#each value as row}
-          <div class="item"> {row.primaryDisplay} </div>
-        {/each}
+    {/if}
+
+  </div>
+
+  {#if overflow}
+    <div class="overflow" class:wide={isHovered}> 
+      {#if isHovered}
+        <div class="circle" > {value?.length ?? 0 } </div> 
       {/if}
     </div>
   {/if}
+  
+  {#if inEdit}
+    <Popover {anchor} align = "left" open={$editorState == "Open"} on:close={editorState.toggle}>
+      <CellLinkPicker active = { $editorState == "Open" } {value} tableId={fieldSchema.tableId} on:change />
+    </Popover>
+  {/if}
+
 </div>
 
 <style>
@@ -195,8 +79,42 @@
     display: flex;
     align-items: stretch;
     justify-content: stretch;
+    max-height: 2.5rem;
+    padding-left: var(--super-table-cell-padding);
+    padding-right: var(--super-table-cell-padding);
+    overflow: hidden;
   }
-
+  .overflow {
+    box-sizing: border-box;
+    position: absolute;
+    right: 1px;
+    top: 1px;
+    height: calc(100% - 2px);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: calc( 4 * var(--super-table-cell-padding));
+    color: var(--spectrum-global-color-gray-500);
+    background: linear-gradient(to right, transparent 0%, var(--spectrum-global-color-gray-50) 60%);
+    transition: all 130ms ease-in-out;
+  }
+  .wide {
+    padding-right: var(--super-table-cell-padding);
+    width: calc( 6 * var(--super-table-cell-padding));
+    background: linear-gradient(to right, transparent 0%, var(--spectrum-global-color-gray-100) 60%);
+  }
+  .circle {
+    width: 20px;
+    height: 20px;
+    font-size: 14px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: var(--spectrum-global-color-gray-400);
+    color: var(--spectrum-global-color-gray-800);
+  }
   .inEdit {
     background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
   }
@@ -206,108 +124,6 @@
     justify-content: flex-start;
     align-items: center;
     column-gap: 0.5rem;
-    padding-left: var(--super-table-cell-padding);
-    padding-right: var(--super-table-cell-padding);
-  }
-
-  .columnWrapper {
-    flex: auto;
-    display: flex;
-    align-items: stretch;
-    gap: 1rem;    
-  }
-  .column {
-    flex: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .searchControl {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: stretch;
-    min-height: 2rem;
-    padding: 0 0.5rem;
-  }
-
-  .columnSelect {
-    flex: auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: 800;
-    min-height: 1.85rem;
-  }
-
-  .input {
-    min-height: 1.85rem;
-    min-width: none;
-    width: 100%;
-    box-sizing: border-box;
-    outline: none;
-    background: none;
-    border: 1px solid var(--primaryColor);
-    padding-left: 0.5rem;
-    color: inherit;
-    font: inherit;
-    cursor: pointer;
-    background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
-  }
-
-  .pageSize {
-    flex: auto;
-    display: flex;
-    justify-content: space-between;
-    padding-top: 0.5rem;
-  }
-  .pageSizeItem {
-    width: 24%;
-    color: var(--primaryColor);
-    display: flex;
-    justify-content: center;
-    border: 1px solid var(--primaryColor);
-    border-radius: 4px;
-    cursor: pointer;
-  }
-
-  .pageSizeItem.selected {
-    color: white;
-    background-color: var(--primaryColor);
-  }
-  .options {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: stretch;
-    overflow-y: auto;
-    padding: 0.3rem;
-    gap: 0rem;
-  }
-  .option {
-    padding: 0.15rem;
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-start;
-    align-items: center;
-    cursor: pointer;
-    gap: 0.3rem;
-  }
-
- :global(.option > span) {
-    color: lime;
-  }
-  .option:hover,
-  .option.focused {
-    background-color: var(--spectrum-global-color-gray-200);
-    border-radius: 4px;
-  }
-
-  .text {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
   .item {
     flex: 0 0 auto;
@@ -315,13 +131,12 @@
     justify-content: center;
     align-items: center;
     border-radius: 4px;
-    background-color: darkcyan;
-    color: whitesmoke;
+    background-color: #2d627a;
+    color: var(--spectrum-global-color-gray-800);
     height: 60%;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
     white-space: nowrap;
     gap: 0.5rem;
-
   }
 </style>

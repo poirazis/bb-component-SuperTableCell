@@ -1,22 +1,11 @@
 <script>
 
-  import PhotoSwipeLightbox from '../../../node_modules/photoswipe/dist/photoswipe-lightbox.esm'
-  import PhotoSwipe from '../../../node_modules/photoswipe/dist/photoswipe.esm';
-  import '../../../node_modules/photoswipe/dist/photoswipe.css';
   import { onMount } from "svelte"
 
  
   export let value
   let lightbox
   const _id = "test_gallery"
-
-  onMount( () => {
-    lightbox = new PhotoSwipeLightbox({
-      gallery: '#' + _id,
-      children: 'div',
-      pswpModule: PhotoSwipe
-    });
-  })
 </script>
 
 {#if value}

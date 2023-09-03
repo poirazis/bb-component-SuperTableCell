@@ -2,7 +2,6 @@
   import { getContext } from "svelte";
   import fsm from "svelte-fsm";
   import clickOutside from "../../../node_modules/@budibase/bbui/src/Actions/click_outside"
-  
   import { processStringSync } from "@budibase/string-templates"
 
   import CellString from "./cells/CellString.svelte";
@@ -22,12 +21,13 @@
   export let fieldSchema
   export let valueTemplate
   export let submitOn = "onEnter"
+  export let isHovered = false;
 
   export let fontColor, fontSize, isBold, isUnderline, isItalic;
   export let valueColor;
 
-  let originalValue = value
-  let tableCell
+  let originalValue = Array.isArray(value) ? [ ... value ] : value
+  let cellAnchor
   let width
 
   const getCellValue = (value, template) => {
@@ -37,17 +37,16 @@
     return processStringSync(template, { value })
   }
 
-  /**
-   * Set up Cell state machine.
-   */
   const cellState = fsm( "View", {
-    View: { focus() { if (editable) {return "Editing"} else {return "Focused"} } },
-    Focused: { unfocus: "View"},
+    View: { 
+      focus: () => { return editable ? "Editing" : "Focused" } },
+    Hovered: { cancel: () => { return "View" }},
+    Focused: { cancel() { return "View" }},
     Error: { check : "View" },
     Editing: { 
-      _enter() { width = tableCell.clientWidth - 2 },
+      _enter() { width = cellAnchor ? cellAnchor.clientWidth - 2 : "auto" },
       submit() { if ( value != originalValue ) acceptChange() ; return "View" }, 
-      cancel() { value = originalValue; return "View" }}
+      cancel() { value = Array.isArray(originalValue) ? [ ... originalValue ] : originalValue ; return "View" }}
   } )
 
   function acceptChange ( ) { 
@@ -62,7 +61,7 @@
     let dataChanges = $tableDataChangesStore.filter(
       (v) => v.rowKey != rowKey || v.field != fieldSchema.name
     );
-
+    originalValue = Array.isArray(value) ? [ ... value ] : value
     $tableDataChangesStore = [...dataChanges, newDataChange];
   }
 
@@ -75,14 +74,17 @@
   }
 
   function handleUnfocus () {
-    if ( submitOn != "onBlur" ) 
-      cellState.cancel();
+    if ( $cellState == "Editing")
+      if ( submitOn != "onBlur" ) 
+        cellState.cancel();
+      else 
+        cellState.submit();
     else 
-      cellState.submit();
+      cellState.cancel()
   }
 
   function handleFocus () {
-    if ( $cellState != "View") 
+    if ( $cellState != "View" ) 
       cellState.cancel()
     else
       cellState.focus()
@@ -90,7 +92,9 @@
 
   function handleChange ( e ) {
     value = e.detail.value
+    console.log("Change Received", value )
   }
+
 </script>
 
 <!-- Will Reder Different CellTypes depending on the column type or manual override -->
@@ -98,9 +102,10 @@
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 <div 
   class="superTableCell"
-  class:inEdit={$cellState === "Editing"}
+  class:focused={ $cellState == "Focused" }
+  class:inEdit={ $cellState == "Editing" }
   tabindex="0"
-  bind:this={tableCell}
+  bind:this={cellAnchor}
   on:click={ handleFocus } 
   on:keydown={ handleKeyboard }
   use:clickOutside={ handleUnfocus }
@@ -116,6 +121,7 @@
   {:else if fieldSchema.type === "longform"}
     <CellString
       inEdit = { $cellState == "Editing"}
+      {width}
       {value}
       formattedValue = { getCellValue(value, valueTemplate) }
       on:change={handleChange}
@@ -124,6 +130,7 @@
     <CellString
       inEdit = { false }
       {value}
+      {width}
       formattedValue = { getCellValue(value, valueTemplate) }
       on:change={handleChange}
     />
@@ -131,6 +138,7 @@
     <CellNumber
       inEdit = { $cellState == "Editing"}
       {value}
+      {width}
       formattedValue = { getCellValue(value, valueTemplate) }
       on:change={handleChange}
     />
@@ -138,6 +146,7 @@
     <CellNumber
       inEdit = { $cellState == "Editing"}
       {value}
+      {width}
       formattedValue = { getCellValue(value, valueTemplate) }
       on:change={handleChange}
     />
@@ -150,11 +159,11 @@
     />
   {:else if fieldSchema.type === "link"}
     <CellLink
-      inEdit = { $cellState == "Editing"}
+      inEdit = { $cellState == "Editing" }
       {value}
-      formattedValue = { getCellValue(value, valueTemplate) }
-      on:change={handleChange}
       {fieldSchema}
+      {isHovered}
+      on:change={handleChange}
     />
   {:else if fieldSchema.type === "boolean"}
     <CellBoolean
@@ -188,17 +197,25 @@
 
 <style>
   .superTableCell {
+    flex: 1 1 auto;
     display: flex;
     justify-content: stretch;
     align-items: stretch;
     background: transparent;
     color: var(--super-column-color);
-    width: 100%;
-    height: 100%;
-  }
-  .inEdit {
     border-width: 1px;
     border-style: solid;
-    border-color: var(--spectrum-alias-border-color-mouse-focus);
+    border-color: transparent;
+    overflow: hidden;
   }
+  .inEdit {
+    color: var(--spectrum-global-color-gray-900);
+    border-color: var(--spectrum-alias-border-color-mouse-focus);
+    background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
+  }
+  .focused {
+    border-color: var(--spectrum-global-color-gray-500);
+    background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
+  }
+
 </style>
