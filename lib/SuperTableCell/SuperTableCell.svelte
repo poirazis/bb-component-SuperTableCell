@@ -113,8 +113,8 @@
   {#if fieldSchema.type === "string"}
     <CellString
       inEdit = { $cellState == "Editing"}
+      bind:value
       {width}
-      {value}
       formattedValue = { getCellValue(value, valueTemplate) }
       on:change={ handleChange }
     />

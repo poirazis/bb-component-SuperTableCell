@@ -10,12 +10,12 @@
     "watch": "rollup -cw"
   },
   "dependencies": {
-    "@budibase/bbui": "^2.9.19",
     "@crownframework/svelte-error-boundary": "^1.0.3",
     "svelte": "^3.49.0",
     "svelte-fsm": "^1.2.0"
   },
   "devDependencies": {
+    "@budibase/bbui": "^2.9.19",
     "@budibase/backend-core": "^2.9.19",
     "@budibase/string-templates": "2.9.36",
     "@rollup/plugin-commonjs": "^18.0.0",

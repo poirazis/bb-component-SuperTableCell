@@ -1,24 +1,34 @@
 <script>
-  import { createEventDispatcher } from 'svelte'
-
-  export let value
+  export let value = ""
   export let inEdit
   export let formattedValue
   export let width 
   export let padded = false
   export let placeholder = "Enter ... "
+  export let debounced
 
-  const dispatch = createEventDispatcher()
-
-  const sendChanges = ( e ) => {
-    dispatch( "change", { value: value } )
+  const focus = (node) => {
+    node.focus();
   }
+
+  let timer;
+	const debounce = e => {
+    if (debounced) {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        value = e.target.value
+      }, debounced ?? 0 );
+    }
+    else {
+     value = e.target.value
+    }
+	}
 
 </script>
 
-<div class="control" class:inEdit style:width >
+<div class="control" style:max-width={width} >
   {#if inEdit }
-    <input on:keypress={sendChanges} class="inline-edit" class:padded {placeholder} bind:value />
+    <input class="inline-edit" {value} class:padded {placeholder} on:input={debounce} use:focus />
   {:else}
     <p class="value"> {formattedValue || value || "" } </p>
   {/if}
@@ -37,9 +47,6 @@
     padding-right: var(--super-table-cell-padding);
     min-width: 0;
   }
-  .inEdit {
-    background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
-  }
 
   .value {
     box-sizing: border-box;
@@ -48,6 +55,8 @@
     text-overflow: ellipsis;
   }
   .inline-edit {
+    width: 100%;
+    height: 100%;
     box-sizing: border-box;
     outline: none;
     background: none;
