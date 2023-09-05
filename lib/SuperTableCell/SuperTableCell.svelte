@@ -1,8 +1,8 @@
 <script>
   import { getContext } from "svelte";
   import fsm from "svelte-fsm";
-  import clickOutside from "../../../node_modules/@budibase/bbui/src/Actions/click_outside"
-  import { processStringSync } from "@budibase/string-templates"
+  import { clickOutsideAction } from "svelte-legos";
+  import { processStringSync }  from "@budibase/string-templates"
 
   import CellString from "./cells/CellString.svelte";
   import CellLink from "./cells/CellLink.svelte";
@@ -104,27 +104,27 @@
   class="superTableCell"
   class:focused={ $cellState == "Focused" }
   class:inEdit={ $cellState == "Editing" }
+  class:inError={ $cellState == "Error" }
   tabindex="0"
   bind:this={cellAnchor}
   on:click={ handleFocus } 
   on:keydown={ handleKeyboard }
-  use:clickOutside={ handleUnfocus }
+  use:clickOutsideAction
+  on:clickoutside = { handleUnfocus }
 >
   {#if fieldSchema.type === "string"}
     <CellString
       inEdit = { $cellState == "Editing"}
-      bind:value
       {width}
       formattedValue = { getCellValue(value, valueTemplate) }
-      on:change={ handleChange }
+      bind:value
     />
   {:else if fieldSchema.type === "longform"}
     <CellString
       inEdit = { $cellState == "Editing"}
       {width}
-      {value}
       formattedValue = { getCellValue(value, valueTemplate) }
-      on:change={handleChange}
+      bind:value
     />
   {:else if fieldSchema.type === "formula"}
     <CellString
@@ -132,23 +132,20 @@
       {value}
       {width}
       formattedValue = { getCellValue(value, valueTemplate) }
-      on:change={handleChange}
     />
   {:else if fieldSchema.type === "number"}
     <CellNumber
       inEdit = { $cellState == "Editing"}
-      {value}
       {width}
       formattedValue = { getCellValue(value, valueTemplate) }
-      on:change={handleChange}
+      bind:value
     />
   {:else if fieldSchema.type === "bigint"}
     <CellNumber
       inEdit = { $cellState == "Editing"}
-      {value}
       {width}
       formattedValue = { getCellValue(value, valueTemplate) }
-      on:change={handleChange}
+      bind:value
     />
   {:else if fieldSchema.type === "datetime"}
     <CellDatetime
@@ -162,7 +159,7 @@
       inEdit = { $cellState == "Editing" }
       {value}
       {fieldSchema}
-      {isHovered}
+      isHovered={false}
       on:change={handleChange}
     />
   {:else if fieldSchema.type === "boolean"}
@@ -173,18 +170,20 @@
     />
   {:else if fieldSchema.type === "array"}
     <CellOptions
-      on:change={handleChange}
+      bind:value
       inEdit = { $cellState == "Editing" }
-      {value}
       multi
       {fieldSchema}
+      fadeToColor={ isHovered ? "var(--spectrum-global-color-gray-100)" : "var(--spectrum-global-color-gray-50)" }
+      {isHovered} 
     />
   {:else if fieldSchema.type === "options"}
     <CellOptions
-      on:change={handleChange}
       inEdit = { $cellState == "Editing" }
-      {value}
       {fieldSchema}
+      fadeToColor={"lime"}
+      bind:value
+      {isHovered} 
     />
   {:else if fieldSchema.type === "attachment"}
     <CellAttachment
@@ -213,9 +212,12 @@
     border-color: var(--spectrum-alias-border-color-mouse-focus);
     background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
   }
+
+  .inError {
+    border-color: var(--spectrum-global-color-red-500);
+  }
   .focused {
     border-color: var(--spectrum-global-color-gray-500);
-    background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
   }
 
 </style>

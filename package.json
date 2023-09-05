@@ -15,8 +15,8 @@
     "svelte-fsm": "^1.2.0"
   },
   "devDependencies": {
-    "@budibase/bbui": "^2.9.19",
     "@budibase/backend-core": "^2.9.19",
+    "@budibase/bbui": "^2.9.19",
     "@budibase/string-templates": "2.9.36",
     "@rollup/plugin-commonjs": "^18.0.0",
     "@rollup/plugin-json": "^6.0.0",

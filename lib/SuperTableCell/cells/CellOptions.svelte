@@ -2,25 +2,30 @@
   import Icon from "../../../node_modules/@budibase/bbui/src/Icon/Icon.svelte";
   import Popover from "../../../node_modules/@budibase/bbui/src/Popover/Popover.svelte";
   import fsm from "svelte-fsm";
-  import { createEventDispatcher } from "svelte";
-
-  const dispatch = createEventDispatcher();
+  import { beforeUpdate } from "svelte"
 
   export let value;
   export let fieldSchema;
   export let inEdit = false;
   export let multi = false;
   export let useOptionColors = false
-  export let defaultOptionColor = "darkcyan"
+  export let defaultOptionColor = "#19647E"
+  export let isHovered = false
   export let placeholder = multi ? "Choose options" : "Choose an option";
+  export let fadeToColor = "var(--spectrum-global-color-gray-50)"
+
+  export const isOpen = () => { return $editorState == "Open"}
+  export const isEmpty = () => { return value.length < 1 }
 
   let anchor;
+  let valueAnchor
+  let overflow = false
   let allowNull = fieldSchema.constraints.presence ?? false;
   let focusedOptionIdx = null;
 
   let editorState = fsm("Closed", {
-    Open: { toggle: "Closed" },
-    Closed: { toggle: "Open" },
+    Open: { toggle( e ) { if ( e && inEdit ) e.stopPropagation (); return "Closed" } },
+    Closed: { toggle ( e ) { if ( e && inEdit ) e.stopPropagation (); return "Open"  } },
   });
 
   /**
@@ -33,13 +38,16 @@
   $: if (!inEdit && $editorState == "Open") editorState.toggle();
 
   const getOptionColor = (value) => {
-    return "var(--primaryColor)";
+    return defaultOptionColor;
   };
+
+  const isOverflown = ( element ) => {
+    return element ? element.clientWidth < element.scrollWidth : false
+  }
 
   function toggleOption(option) {
     if (option == "_clearSelection") {
       value = multi ? [] : null;
-      dispatch("change", { value: value });
       editorState.toggle();
       return;
     }
@@ -55,60 +63,38 @@
         value = [...value, option];
       }
     }
-    dispatch("change", { value: value });
   }
 
-  function handleKeyboard ( e ) {
-    console.log( "KeyPress ", e.key )
-  }
-
+  beforeUpdate( () => { overflow = isOverflown(valueAnchor); console.log(overflow) } )
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div
-  class="control"
-  on:keypress={handleKeyboard}
-  bind:this={anchor}
-  on:click={(e) => {
-    if (inEdit) {
-      e.stopPropagation();
-      editorState.toggle();
-    }
-  }}
->
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="inline-value" class:inEdit>
+<div class="control" class:inEdit bind:this={anchor} >
+  <div class="inline-value" class:inEdit bind:this={valueAnchor} on:click={editorState.toggle} >
     {#if value.length < 1 && inEdit}
-      <span class="placeholder">{placeholder}</span>
+      <span class="placeholder">{ placeholder } </span>
     {:else}
-      {#each value as val}
+      {#each value as val (val)}
         {@const color = optionColors[val] || getOptionColor(val)}
-        {#if color}
           <div class="item text" style="--color: {color}">
-            <span>
-              {val}
-            </span>
+            <span> {val} </span>
           </div>
-        {:else}
-          <div class="text">
-            {val || ""}
-          </div>
-        {/if}
       {/each}
+    {/if}
+    {#if overflow }
+      <div class="overflow" style:background-color={fadeToColor} />
     {/if}
   </div>
 
   {#if inEdit}
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="arrow">
-      <Icon name="ChevronDown" />
+      <Icon name="ChevronDown" hoverable on:click={editorState.toggle} />
     </div>
   {/if}
 
-  <Popover on:close={editorState.toggle} {anchor} align={"left"} open={$editorState == "Open"}>
+  <Popover on:close={editorState.toggle} {anchor} align={"left"} open={ $editorState == "Open"} >
     <div class="options" on:wheel={(e) => e.stopPropagation()}>
       {#if !allowNull}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="option"
           on:click|stopPropagation={() => toggleOption("_clearSelection")}
@@ -119,9 +105,8 @@
           </div>
         </div>
       {/if}
-      {#each options as option, idx}
+      {#each options as option, idx (idx)}
         {@const color = optionColors[option] || getOptionColor(option)}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
         <div
           class="option"
           on:click|stopPropagation={() => toggleOption(option)}
@@ -143,43 +128,57 @@
 
 <style>
   .control {
+    box-sizing: content-box;
     flex: auto;
     display: flex;
     align-items: stretch;
     cursor: pointer;
-    overflow: hidden;
+    padding-left: var(--super-table-cell-padding);
+    padding-right: var(--super-table-cell-padding);
+    min-width: 0;
   }
-
+  .overflow {
+    position: absolute;
+    right: 0px;
+    top: 20%;
+    height: 60%;
+    width: calc( 3 * var(--super-table-cell-padding));
+    mask-image: linear-gradient(to right, transparent 0%, black 75% );
+    mask-mode: alpha;
+    z-index: 2;
+    transition: all 130ms;
+    border-radius: 2px;
+  }
   .inline-value {
-    flex: auto;
+    position:relative;
+    flex-grow: 1;
+    flex-shrink: 1;
     display: flex;
     flex-direction: row;
     align-items: center;
     gap: 0.5rem;
-    padding-left: var(--super-table-cell-padding);
-    padding-right: var(--super-table-cell-padding);
+    overflow: hidden;
   }
-
+  .inline-value.inEdit {
+    cursor: pointer;
+  }
+  
   .inline-value .placeholder {
     font-style: italic;
     white-space: nowrap;
+    text-overflow: ellipsis;
     color: var(--spectrum-global-color-gray-600);
-  }
-  .inEdit {
-    background-color: var(
-      --spectrum-textfield-m-background-color,
-      var(--spectrum-global-color-gray-50)
-    );
   }
 
   .item {
+    flex: none;
     display: flex;
     justify-content: center;
     align-items: center;
     border-radius: 4px;
     background-color: var(--color);
-    color: white;
-    height: 55%;
+    color: var(--spectrum-global-color-gray-800);
+    height: 60%;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
     max-height: 1.85rem;
@@ -193,15 +192,10 @@
     flex: 0 0 auto;
   }
   .arrow {
-    height: 100%;
     display: grid;
     place-items: center;
-    padding-left: 0.3rem;
-    padding-right: 0.3rem;
-    background-color: var(
-      --spectrum-textfield-m-background-color,
-      var(--spectrum-global-color-gray-50)
-    );
+    z-index: 3;
+    background-color: transparent;
   }
   .options {
     display: flex;

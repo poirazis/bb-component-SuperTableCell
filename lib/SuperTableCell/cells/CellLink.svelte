@@ -3,8 +3,6 @@
   import Popover from "../../../node_modules/@budibase/bbui/src/Popover/Popover.svelte";
   import fsm from "svelte-fsm";
   import { createEventDispatcher, beforeUpdate } from "svelte";
-
-	import { fly } from 'svelte/transition';
   import CellLinkPicker from "./CellLinkPicker.svelte";
   const dispatch = createEventDispatcher();
 
@@ -84,6 +82,7 @@
     padding-right: var(--super-table-cell-padding);
     overflow: hidden;
   }
+  
   .overflow {
     box-sizing: border-box;
     position: absolute;
@@ -131,7 +130,7 @@
     justify-content: center;
     align-items: center;
     border-radius: 4px;
-    background-color: #2d627a;
+    background-color: var(--spectrum-global-color-seafoam-400);
     color: var(--spectrum-global-color-gray-800);
     height: 60%;
     padding-left: 0.5rem;
