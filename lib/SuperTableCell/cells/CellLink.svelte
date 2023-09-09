@@ -6,19 +6,21 @@
   import CellLinkPicker from "./CellLinkPicker.svelte";
   const dispatch = createEventDispatcher();
 
-  export let value = []
-  export let inEdit;
+  export let value 
+  export let cellState
   export let fieldSchema;
   export let isHovered = false;
+
+  export let editorState= fsm("Closed", {
+    Open: { toggle: "Closed" },
+    Closed: { toggle: "Open" },
+  });
 
   let anchor;
   let overflow = false
   let regen = false
 
-  let editorState = fsm("Closed", {
-    Open: { toggle: "Closed" },
-    Closed: { toggle: "Open" },
-  });
+  $: inEdit = $cellState == "Editing"
 
   const unselectRow = ( val ) => {
     if ( value ) {
@@ -32,11 +34,24 @@
     editorState.toggle();
   }
 
+  const handleKeyboard = ( e ) => {
+
+  }
   beforeUpdate ( () => overflow = anchor ? anchor.clientWidth < anchor.scrollWidth : false )
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div bind:this={anchor} class="control" class:inEdit>
+<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+<div 
+  bind:this={anchor} 
+  class="superTableCell" 
+  class:inEdit
+  class:focused={$cellState == "Focused"}
+  tabindex="0" 
+  on:keydown={handleKeyboard} 
+  on:focus={ cellState.focus }
+  on:blur={ () => { setTimeout ( cellState.unfocus, 10 ) } }
+>
   <div class="inline-value">
     {#if inEdit}
       <Icon name="Add" hoverable size="S" on:click={(e) => openPicker(e)} />
@@ -65,22 +80,41 @@
   
   {#if inEdit}
     <Popover {anchor} align = "left" open={$editorState == "Open"} on:close={editorState.toggle}>
-      <CellLinkPicker active = { $editorState == "Open" } {value} tableId={fieldSchema.tableId} on:change />
+      <CellLinkPicker 
+        active = { $editorState == "Open" } 
+        {value} 
+        tableId={fieldSchema.tableId} 
+        on:change={(e) => value = e.detail.value }
+      />
     </Popover>
   {/if}
 
 </div>
 
 <style>
-  .control {
+  .superTableCell {
     flex: auto;
     display: flex;
     align-items: stretch;
-    justify-content: stretch;
-    max-height: 2.5rem;
+    cursor: pointer;
     padding-left: var(--super-table-cell-padding);
     padding-right: var(--super-table-cell-padding);
-    overflow: hidden;
+    border: 1px solid transparent;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+  .superTableCell.inEdit {
+    width: var(--lock-width);
+    max-width: var(--lock-width);
+    color: var(--spectrum-global-color-gray-900);
+    border-color: var(--spectrum-alias-border-color-mouse-focus);
+    background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
+  }
+  .superTableCell.focused {
+    border-color: var(--spectrum-global-color-gray-500);
+  }
+  .superTableCell:focus {
+    outline: none;
   }
   
   .overflow {
@@ -114,8 +148,15 @@
     background-color: var(--spectrum-global-color-gray-400);
     color: var(--spectrum-global-color-gray-800);
   }
-  .inEdit {
-    background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
+  .inEdit::before {
+    content: "";
+    position: absolute;
+    top: 1;
+    right: 1;
+    left: 1;
+    bottom: 1;
+    filter: brightness(85%);
+    background-color: var(--spectrum-global-color-gray-50);
   }
   .inline-value {
     flex: 1 1 auto;
@@ -123,6 +164,7 @@
     justify-content: flex-start;
     align-items: center;
     column-gap: 0.5rem;
+    z-index: 1;
   }
   .item {
     flex: 0 0 auto;

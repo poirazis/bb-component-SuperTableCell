@@ -1,8 +1,8 @@
 <script>
   import { getContext } from "svelte";
-  import fsm from "svelte-fsm";
-  import { clickOutsideAction } from "svelte-legos";
   import { processStringSync }  from "@budibase/string-templates"
+  import { clickOutsideAction } from "svelte-legos";
+  import fsm from "svelte-fsm";
 
   import CellString from "./cells/CellString.svelte";
   import CellLink from "./cells/CellLink.svelte";
@@ -12,7 +12,6 @@
   import CellOptions from "./cells/CellOptions.svelte";
   import CellNumber from "./cells/CellNumber.svelte";
 
-  const columnContext = getContext("columnContext");
   const tableDataChangesStore = getContext("tableDataChangesStore");
 
   export let value
@@ -23,12 +22,9 @@
   export let submitOn = "onEnter"
   export let isHovered = false;
 
-  export let fontColor, fontSize, isBold, isUnderline, isItalic;
-  export let valueColor;
-
   let originalValue = Array.isArray(value) ? [ ... value ] : value
-  let cellAnchor
   let width
+  let editorState
 
   const getCellValue = (value, template) => {
     if (!valueTemplate) {
@@ -38,16 +34,35 @@
   }
 
   const cellState = fsm( "View", {
-    View: { 
-      focus: () => { return editable ? "Editing" : "Focused" } },
+    "*" : { 
+      focus () { return "Focused" },
+      unfocus () { return "View" },
+      handleKeyboard ( e ) {
+        if ( e.key == "Escape" )
+          this.unfocus()
+      }
+    },
+    View: { },
     Hovered: { cancel: () => { return "View" }},
-    Focused: { cancel() { return "View" }},
+    Focused: { 
+      _enter() { if (editable) this.enterEditing.debounce(50) },
+      enterEditing: "Editing"
+    },
     Error: { check : "View" },
     Editing: { 
-      _enter() { width = cellAnchor ? cellAnchor.clientWidth - 2 : "auto" },
+      focus() { },
+      unfocus() { 
+        if ( editorState && $editorState == "Closed" ) 
+          return "View" 
+        else if ( editorState == undefined)
+          return "View"
+      },
+      openEditor() { if ( editorState ) editorState.open() },
+      closeEditor() { if ( editorState ) editorState.close() },
       submit() { if ( value != originalValue ) acceptChange() ; return "View" }, 
-      cancel() { value = Array.isArray(originalValue) ? [ ... originalValue ] : originalValue ; return "View" }}
-  } )
+      cancel() { value = Array.isArray(originalValue) ? [ ... originalValue ] : originalValue ; return "View" },
+    }
+  })
 
   function acceptChange ( ) { 
     let newDataChange = {
@@ -65,87 +80,45 @@
     $tableDataChangesStore = [...dataChanges, newDataChange];
   }
 
-  function handleKeyboard ( e ) {
-    if ( e.key == "Escape" ) {
-      cellState.cancel();
-    } else if (e.key == "Enter" ) {
-      cellState.submit();
-    }
-  }
-
-  function handleUnfocus () {
-    if ( $cellState == "Editing")
-      if ( submitOn != "onBlur" ) 
-        cellState.cancel();
-      else 
-        cellState.submit();
-    else 
-      cellState.cancel()
-  }
-
-  function handleFocus () {
-    if ( $cellState != "View" ) 
-      cellState.cancel()
-    else
-      cellState.focus()
-  }
 
   function handleChange ( e ) {
     value = e.detail.value
     console.log("Change Received", value )
   }
 
+  $: console.log("Cell ", $cellState)
 </script>
 
-<!-- Will Reder Different CellTypes depending on the column type or manual override -->
-<!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 <div 
-  class="superTableCell"
-  class:focused={ $cellState == "Focused" }
-  class:inEdit={ $cellState == "Editing" }
-  class:inError={ $cellState == "Error" }
-  tabindex="0"
-  bind:this={cellAnchor}
-  on:click={ handleFocus } 
-  on:keydown={ handleKeyboard }
+  class="superTableCellWrapper" 
+  on:keydown={cellState.handleKeyboard}
+  on:click={cellState.focus}
   use:clickOutsideAction
-  on:clickoutside = { handleUnfocus }
+  on:clickoutside={ () => setTimeout( cellState.unfocus, 10 ) }
 >
-  {#if fieldSchema.type === "string"}
+  {#if fieldSchema.type === "string" || fieldSchema.type === "longform" || fieldSchema.type === "formula"}
     <CellString
-      inEdit = { $cellState == "Editing"}
-      {width}
-      formattedValue = { getCellValue(value, valueTemplate) }
       bind:value
-    />
-  {:else if fieldSchema.type === "longform"}
-    <CellString
-      inEdit = { $cellState == "Editing"}
-      {width}
+      {cellState}
       formattedValue = { getCellValue(value, valueTemplate) }
-      bind:value
-    />
-  {:else if fieldSchema.type === "formula"}
-    <CellString
-      inEdit = { false }
-      {value}
       {width}
-      formattedValue = { getCellValue(value, valueTemplate) }
     />
-  {:else if fieldSchema.type === "number"}
+  {:else if fieldSchema.type === "number" || fieldSchema.type === "bigint"}
     <CellNumber
       inEdit = { $cellState == "Editing"}
       {width}
       formattedValue = { getCellValue(value, valueTemplate) }
       bind:value
     />
-  {:else if fieldSchema.type === "bigint"}
-    <CellNumber
-      inEdit = { $cellState == "Editing"}
-      {width}
-      formattedValue = { getCellValue(value, valueTemplate) }
+  {:else if fieldSchema.type === "array" || fieldSchema.type === "options" }
+    <CellOptions
       bind:value
+      bind:editorState
+      {cellState}
+      {fieldSchema}
+      fadeToColor={ isHovered ? "var(--spectrum-global-color-gray-100)" : "var(--spectrum-global-color-gray-50)" }
+      {isHovered} 
     />
   {:else if fieldSchema.type === "datetime"}
     <CellDatetime
@@ -156,34 +129,17 @@
     />
   {:else if fieldSchema.type === "link"}
     <CellLink
-      inEdit = { $cellState == "Editing" }
-      {value}
+      bind:value
+      bind:editorState
+      {cellState}
       {fieldSchema}
       isHovered={false}
-      on:change={handleChange}
     />
   {:else if fieldSchema.type === "boolean"}
     <CellBoolean
       inEdit = { $cellState == "Editing"}
       on:change={handleChange}
       {value}
-    />
-  {:else if fieldSchema.type === "array"}
-    <CellOptions
-      bind:value
-      inEdit = { $cellState == "Editing" }
-      multi
-      {fieldSchema}
-      fadeToColor={ isHovered ? "var(--spectrum-global-color-gray-100)" : "var(--spectrum-global-color-gray-50)" }
-      {isHovered} 
-    />
-  {:else if fieldSchema.type === "options"}
-    <CellOptions
-      inEdit = { $cellState == "Editing" }
-      {fieldSchema}
-      fadeToColor={"lime"}
-      bind:value
-      {isHovered} 
     />
   {:else if fieldSchema.type === "attachment"}
     <CellAttachment
@@ -195,29 +151,11 @@
 </div>
 
 <style>
-  .superTableCell {
-    flex: 1 1 auto;
+  .superTableCellWrapper {
+    flex: auto;
     display: flex;
-    justify-content: stretch;
     align-items: stretch;
-    background: transparent;
-    color: var(--super-column-color);
-    border-width: 1px;
-    border-style: solid;
-    border-color: transparent;
     overflow: hidden;
   }
-  .inEdit {
-    color: var(--spectrum-global-color-gray-900);
-    border-color: var(--spectrum-alias-border-color-mouse-focus);
-    background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
-  }
-
-  .inError {
-    border-color: var(--spectrum-global-color-red-500);
-  }
-  .focused {
-    border-color: var(--spectrum-global-color-gray-500);
-  }
-
+  
 </style>

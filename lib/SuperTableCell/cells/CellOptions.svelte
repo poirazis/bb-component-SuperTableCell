@@ -2,40 +2,65 @@
   import Icon from "../../../node_modules/@budibase/bbui/src/Icon/Icon.svelte";
   import Popover from "../../../node_modules/@budibase/bbui/src/Popover/Popover.svelte";
   import fsm from "svelte-fsm";
-  import { beforeUpdate } from "svelte"
+  import { onMount, beforeUpdate  } from "svelte"
+  import { flip } from 'svelte/animate';
 
+  export let cellState
   export let value;
   export let fieldSchema;
-  export let inEdit = false;
-  export let multi = false;
+
   export let useOptionColors = false
   export let defaultOptionColor = "#19647E"
   export let isHovered = false
   export let placeholder = multi ? "Choose options" : "Choose an option";
   export let fadeToColor = "var(--spectrum-global-color-gray-50)"
-
-  export const isOpen = () => { return $editorState == "Open"}
-  export const isEmpty = () => { return value.length < 1 }
+  export let optionIcon = "LoupeView"
 
   let anchor;
   let valueAnchor
   let overflow = false
-  let allowNull = fieldSchema.constraints.presence ?? false;
-  let focusedOptionIdx = null;
+  let focusedOptionIdx = undefined;
+  let lockWidth
 
-  let editorState = fsm("Closed", {
-    Open: { toggle( e ) { if ( e && inEdit ) e.stopPropagation (); return "Closed" } },
-    Closed: { toggle ( e ) { if ( e && inEdit ) e.stopPropagation (); return "Open"  } },
+  export let editorState = fsm( "Closed", {
+    "*": {
+      handleKeyboard( e ) { }
+    },
+    Open: { 
+      close() { return "Closed" },
+      toggle() { return "Closed" },
+      toggleOption ( idx ) { toggleOption(options[idx]); if (!multi) this.close.debounce(100)},
+      highlightNext () { 
+        if ( focusedOptionIdx == options.length - 1 )
+          focusedOptionIdx = 0
+        else if ( focusedOptionIdx != undefined )
+          focusedOptionIdx = focusedOptionIdx + 1; 
+        else 
+          focusedOptionIdx = 0;
+      },
+      highlightPrevious () { 
+        if ( focusedOptionIdx == 0 ) 
+          focusedOptionIdx = options.length - 1  
+        else if ( focusedOptionIdx == undefined )
+          focusedOptionIdx = options.length - 1
+        else
+          focusedOptionIdx = focusedOptionIdx -1;
+      },
+    },
+    Closed: {
+      toggle() { return "Open" },
+      open() { return "Open" },
+      highlightNext () { return "Open" },
+    }
   });
 
-  /**
-   * Make sure value is always an array
-   */
-  $: value = multi ? (value ? value : []) : value ? [value] : [];
-
+  $: value = Array.isArray(value) ? value : value ? [ value ] : []
   $: options = fieldSchema?.constraints?.inclusion || [];
   $: optionColors = fieldSchema?.optionColors || {};
-  $: if (!inEdit && $editorState == "Open") editorState.toggle();
+  $: allowNull = !fieldSchema.constraints.presence ?? false;
+  $: if (allowNull && options.length > 1) options = [ "Clear Selection", ...options ]
+  $: inEdit = $cellState == "Editing";
+  $: multi = fieldSchema?.type == "array" ?? false
 
   const getOptionColor = (value) => {
     return defaultOptionColor;
@@ -45,16 +70,31 @@
     return element ? element.clientWidth < element.scrollWidth : false
   }
 
-  function toggleOption(option) {
-    if (option == "_clearSelection") {
+  const handleKeyboard = ( e ) => {
+    if ( $editorState == "Open" ) {  
+      if ( e.key == "ArrowDown" ) editorState.highlightNext( e.preventDefault() );
+      if ( e.key == "ArrowUp" ) editorState.highlightPrevious();
+      if ( e.key == "Escape" ) editorState.close( e.stopPropagation() ) ;
+      if ( e.key == "Enter" ) editorState.close( e.stopPropagation() ) ;
+      if ( e.key == "Tab" ) editorState.close();
+      if ( e.keyCode == 32 ) {
+        e.preventDefault();
+        e.stopPropagation();
+        focusedOptionIdx != undefined ? editorState.toggleOption(focusedOptionIdx) : editorState.toggle();
+      }  
+    } else if ( $cellState == "Editing") {
+      if ( e.keyCode == 32 ) editorState.toggle( e.preventDefault() );
+    }
+  }
+
+  const toggleOption = ( option ) => {
+    if (option == "Clear Selection") {
       value = multi ? [] : null;
-      editorState.toggle();
       return;
     }
 
     if (!multi) {
       value = [option];
-      editorState.toggle();
     } else {
       if (value.includes(option)) {
         value.splice(value.indexOf(option), 1);
@@ -65,81 +105,123 @@
     }
   }
 
-  beforeUpdate( () => { overflow = isOverflown(valueAnchor); console.log(overflow) } )
+  beforeUpdate( () => { overflow = isOverflown(valueAnchor) } )
+  onMount( () => lockWidth = anchor.clientWidth )
+
+  $: console.log( "Editor State ", $editorState)
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div class="control" class:inEdit bind:this={anchor} >
-  <div class="inline-value" class:inEdit bind:this={valueAnchor} on:click={editorState.toggle} >
+<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+<div 
+  bind:this={anchor} 
+  class="superTableCell" 
+  class:inEdit
+  class:focused={$cellState == "Focused"}
+  tabindex="0" 
+  on:keydown={handleKeyboard} 
+  on:focus={ cellState.focus }
+  on:blur={ () => { setTimeout ( cellState.unfocus, 10 ) } }
+>
+  <div bind:this={valueAnchor} class="inline-value" >
     {#if value.length < 1 && inEdit}
       <span class="placeholder">{ placeholder } </span>
-    {:else}
+    {:else if value.length > 0}
       {#each value as val (val)}
         {@const color = optionColors[val] || getOptionColor(val)}
-          <div class="item text" style="--color: {color}">
+          <div animate:flip={{ duration: 130 }} class="item text" style="--color: {color}">
             <span> {val} </span>
           </div>
       {/each}
     {/if}
     {#if overflow }
-      <div class="overflow" style:background-color={fadeToColor} />
+      <div class="overflow" style:background-color={ inEdit ? "var(spectrum-global-color-gray-50)" : fadeToColor} />
     {/if}
   </div>
 
   {#if inEdit}
     <div class="arrow">
-      <Icon name="ChevronDown" hoverable on:click={editorState.toggle} />
+      <Icon name="ChevronDown" hoverable on:click={cellState.openEditor} />
     </div>
   {/if}
 
-  <Popover on:close={editorState.toggle} {anchor} align={"left"} open={ $editorState == "Open"} >
+  <Popover 
+    {anchor} 
+    useAnchorWidth={!multi}
+    dismissible
+    align={"left"} 
+    open={ $editorState == "Open" } 
+    on:close={ editorState.close }
+  >
     <div class="options" on:wheel={(e) => e.stopPropagation()}>
-      {#if !allowNull}
-        <div
-          class="option"
-          on:click|stopPropagation={() => toggleOption("_clearSelection")}
-        >
-          <div class="option text">
-            <Icon name="Cancel" size="S" color={"var(--primaryColor)"} />
-            None
-          </div>
-        </div>
-      {/if}
-      {#each options as option, idx (idx)}
+      {#if options.length < 1}
+        No Available Options
+      {:else}
+        {#each options as option,idx (idx)}
         {@const color = optionColors[option] || getOptionColor(option)}
-        <div
-          class="option"
-          on:click|stopPropagation={() => toggleOption(option)}
-          class:focused={focusedOptionIdx === idx}
-          on:mouseenter={() => (focusedOptionIdx = idx)}
-        >
-          <div class="option text">
-            <Icon name="LoupeView" size="S" {color} />
-            {option}
-          </div>
-          {#if value?.includes(option)}
-            <Icon name="Checkmark" size="S" color="var(--primaryColor)" />
+          {#if (option == "Clear Selection") }
+            <div
+              class="option"
+              style:color={"var(--primaryColor)"}
+              class:focused={focusedOptionIdx === idx}
+              on:mouseenter={() => (focusedOptionIdx = idx)}
+              on:click|preventDefault={(e) => editorState.toggleOption(idx)}
+            >
+              <div class="option text">
+                <Icon name={"Cancel"} size="S" color="var(--spectrum-global-color-red-500)" />
+                {option}
+              </div>
+            </div>
+          {:else}
+            <div
+              class="option"
+              class:focused={focusedOptionIdx === idx}
+              on:click|preventDefault={(e) => editorState.toggleOption(idx)}
+              on:mouseenter={() => (focusedOptionIdx = idx)}
+            >
+              <div class="option text">
+                <Icon name={optionIcon} size="S" {color} />
+                {option}
+              </div>
+              {#if value?.includes(option)}
+                <Icon name="Checkmark" size="S" color="var(--primaryColor)" />
+              {/if}
+            </div>
           {/if}
-        </div>
-      {/each}
+        {/each}
+      {/if}
     </div>
   </Popover>
 </div>
 
 <style>
-  .control {
-    box-sizing: content-box;
+  .superTableCell {
     flex: auto;
     display: flex;
     align-items: stretch;
     cursor: pointer;
     padding-left: var(--super-table-cell-padding);
     padding-right: var(--super-table-cell-padding);
+    border: 1px solid transparent;
     min-width: 0;
+    box-sizing: border-box;
+  }
+  .superTableCell.inEdit {
+    width: var(--lock-width);
+    max-width: var(--lock-width);
+    color: var(--spectrum-global-color-gray-900);
+    border-color: var(--spectrum-alias-border-color-mouse-focus);
+    background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
+  }
+  .superTableCell.focused {
+    border-color: var(--spectrum-global-color-gray-500);
+  }
+  .superTableCell:focus {
+    outline: none;
   }
   .overflow {
     position: absolute;
-    right: 0px;
+    right: -2px;
     top: 20%;
     height: 60%;
     width: calc( 3 * var(--super-table-cell-padding));
@@ -159,17 +241,12 @@
     gap: 0.5rem;
     overflow: hidden;
   }
-  .inline-value.inEdit {
-    cursor: pointer;
-  }
-  
   .inline-value .placeholder {
     font-style: italic;
     white-space: nowrap;
     text-overflow: ellipsis;
     color: var(--spectrum-global-color-gray-600);
   }
-
   .item {
     flex: none;
     display: flex;
@@ -187,9 +264,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-  .multi .text {
-    flex: 0 0 auto;
   }
   .arrow {
     display: grid;
