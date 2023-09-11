@@ -2,7 +2,7 @@
   import Icon from "../../../node_modules/@budibase/bbui/src/Icon/Icon.svelte";
   import Popover from "../../../node_modules/@budibase/bbui/src/Popover/Popover.svelte";
   import fsm from "svelte-fsm";
-  import { onMount, beforeUpdate  } from "svelte"
+  import { onMount, beforeUpdate } from "svelte"
   import { flip } from 'svelte/animate';
 
   export let cellState
@@ -18,7 +18,7 @@
 
   let anchor;
   let valueAnchor
-  let overflow = false
+  let overflow = true
   let focusedOptionIdx = undefined;
   let lockWidth
 
@@ -66,10 +66,6 @@
     return defaultOptionColor;
   };
 
-  const isOverflown = ( element ) => {
-    return element ? element.clientWidth < element.scrollWidth : false
-  }
-
   const handleKeyboard = ( e ) => {
     if ( $editorState == "Open" ) {  
       if ( e.key == "ArrowDown" ) editorState.highlightNext( e.preventDefault() );
@@ -105,10 +101,11 @@
     }
   }
 
-  beforeUpdate( () => { overflow = isOverflown(valueAnchor) } )
+  beforeUpdate ( () => { 
+    overflow = valueAnchor ? valueAnchor.clientWidth != valueAnchor.scrollWidth : undefined
+  } )
   onMount( () => lockWidth = anchor.clientWidth )
 
-  $: console.log( "Editor State ", $editorState)
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -134,16 +131,18 @@
           </div>
       {/each}
     {/if}
-    {#if overflow }
-      <div class="overflow" style:background-color={ inEdit ? "var(spectrum-global-color-gray-50)" : fadeToColor} />
-    {/if}
-  </div>
 
-  {#if inEdit}
-    <div class="arrow">
+    {#if overflow && inEdit}
+      <div class="overflow" class:inEdit style:background-color={ fadeToColor } >
+          <Icon name="ChevronDown" hoverable on:click={cellState.openEditor} />
+      </div>
+    {:else if inEdit}
       <Icon name="ChevronDown" hoverable on:click={cellState.openEditor} />
-    </div>
-  {/if}
+    {:else if overflow}
+      <div class="overflow" style:background-color={fadeToColor} ></div>
+    {/if}
+
+  </div>
 
   <Popover 
     {anchor} 
@@ -195,50 +194,14 @@
 </div>
 
 <style>
-  .superTableCell {
-    flex: auto;
-    display: flex;
-    align-items: stretch;
-    cursor: pointer;
-    padding-left: var(--super-table-cell-padding);
-    padding-right: var(--super-table-cell-padding);
-    border: 1px solid transparent;
-    min-width: 0;
-    box-sizing: border-box;
-  }
-  .superTableCell.inEdit {
-    width: var(--lock-width);
-    max-width: var(--lock-width);
-    color: var(--spectrum-global-color-gray-900);
-    border-color: var(--spectrum-alias-border-color-mouse-focus);
-    background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
-  }
-  .superTableCell.focused {
-    border-color: var(--spectrum-global-color-gray-500);
-  }
-  .superTableCell:focus {
-    outline: none;
-  }
-  .overflow {
-    position: absolute;
-    right: -2px;
-    top: 20%;
-    height: 60%;
-    width: calc( 3 * var(--super-table-cell-padding));
-    mask-image: linear-gradient(to right, transparent 0%, black 75% );
-    mask-mode: alpha;
-    z-index: 2;
-    transition: all 130ms;
-    border-radius: 2px;
-  }
   .inline-value {
-    position:relative;
-    flex-grow: 1;
-    flex-shrink: 1;
+    position: relative;
+    flex: 1 1 auto;
     display: flex;
-    flex-direction: row;
+    justify-content: flex-start;
     align-items: center;
-    gap: 0.5rem;
+    column-gap: 0.5rem;
+    z-index: 1;
     overflow: hidden;
   }
   .inline-value .placeholder {
@@ -264,12 +227,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-  .arrow {
-    display: grid;
-    place-items: center;
-    z-index: 3;
-    background-color: transparent;
   }
   .options {
     display: flex;

@@ -3,7 +3,7 @@
   "metadata": {},
   "schema": {
     "name": "bb-component-SuperTableCell",
-    "friendlyName": "Super Table Cell",
+    "friendlyName": "⚡️ Super Table Cell",
     "description": "Create Complex Super Columns !",
     "icon": "TableEdit",
     "settings": [
@@ -22,11 +22,26 @@
         "key": "cellType",
         "label": "Cell Type",
         "options": [
-          { "label": "Auto", "value": "auto" },
-          { "label": "Single Value", "value": "single" },
-          { "label": "Relationship", "value": "relationship" },
-          { "label": "JSON Object", "value": "json" },
-          { "label": "Options", "value": "options" }
+          {
+            "label": "Auto",
+            "value": "auto"
+          },
+          {
+            "label": "Single Value",
+            "value": "single"
+          },
+          {
+            "label": "Relationship",
+            "value": "relationship"
+          },
+          {
+            "label": "JSON Object",
+            "value": "json"
+          },
+          {
+            "label": "Options",
+            "value": "options"
+          }
         ],
         "defaultValue": "auto",
         "info": "On Auto will match Parent Column Field Type"
@@ -35,11 +50,23 @@
         "type": "select",
         "key": "viewType",
         "label": "Display Type",
-        "dependsOn": { "setting": "cellType", "value":"relationship"},
+        "dependsOn": {
+          "setting": "cellType",
+          "value": "relationship"
+        },
         "options": [
-          { "label": "List", "value": "list" },
-          { "label": "Horizontal List", "value": "hlist" },
-          { "label": "TreeView", "value": "tree" }
+          {
+            "label": "List",
+            "value": "list"
+          },
+          {
+            "label": "Horizontal List",
+            "value": "hlist"
+          },
+          {
+            "label": "TreeView",
+            "value": "tree"
+          }
         ],
         "defaultValue": "tree"
       },
@@ -48,12 +75,30 @@
         "key": "fontSize",
         "label": "Font Size",
         "options": [
-          {"label": "Inherit", "value": "inherit"},
-          {"label": "Extra Small", "value": "XS"},
-          {"label": "Small", "value": "S"},
-          {"label": "Medium", "value": "M"},
-          {"label": "Large", "value": "L"},
-          {"label": "Extra Large", "value": "XL"}
+          {
+            "label": "Inherit",
+            "value": "inherit"
+          },
+          {
+            "label": "Extra Small",
+            "value": "XS"
+          },
+          {
+            "label": "Small",
+            "value": "S"
+          },
+          {
+            "label": "Medium",
+            "value": "M"
+          },
+          {
+            "label": "Large",
+            "value": "L"
+          },
+          {
+            "label": "Extra Large",
+            "value": "XL"
+          }
         ],
         "defaultValue": "M"
       },
@@ -86,5 +131,7 @@
         "label": "Editable"
       }
     ]
-  }
+  },
+  "hash": "4f609dd3735d5b74d2e916ed9d4967809996bf5d",
+  "version": "2.0.0-alpha"
 }

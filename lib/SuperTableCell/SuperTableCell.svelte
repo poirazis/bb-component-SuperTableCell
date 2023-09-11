@@ -21,6 +21,7 @@
   export let valueTemplate
   export let submitOn = "onEnter"
   export let isHovered = false;
+  export let initialState = "View"
 
   let originalValue = Array.isArray(value) ? [ ... value ] : value
   let width
@@ -33,7 +34,7 @@
     return processStringSync(template, { value })
   }
 
-  const cellState = fsm( "View", {
+  const cellState = fsm( initialState , {
     "*" : { 
       focus () { return "Focused" },
       unfocus () { return "View" },
@@ -86,7 +87,7 @@
     console.log("Change Received", value )
   }
 
-  $: console.log("Cell ", $cellState)
+  $: console.log("Cell ", $cellState, initialState)
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
@@ -117,7 +118,7 @@
       bind:editorState
       {cellState}
       {fieldSchema}
-      fadeToColor={ isHovered ? "var(--spectrum-global-color-gray-100)" : "var(--spectrum-global-color-gray-50)" }
+      fadeToColor={ isHovered && $cellState != "Editing" ? "var(--spectrum-global-color-gray-100)" : "var(--spectrum-global-color-gray-50)" }
       {isHovered} 
     />
   {:else if fieldSchema.type === "datetime"}
@@ -133,7 +134,8 @@
       bind:editorState
       {cellState}
       {fieldSchema}
-      isHovered={false}
+      fadeToColor={ isHovered ? "var(--spectrum-global-color-gray-100)" : "var(--spectrum-global-color-gray-50)" }
+      {isHovered}
     />
   {:else if fieldSchema.type === "boolean"}
     <CellBoolean
@@ -147,15 +149,76 @@
       {editable}
       {value}
     />
+  {:else}
+    <CellString
+      bind:value
+      {cellState}
+      formattedValue = { getCellValue(value, valueTemplate) }
+      {width}
+    />
   {/if}
 </div>
 
 <style>
-  .superTableCellWrapper {
-    flex: auto;
-    display: flex;
-    align-items: stretch;
-    overflow: hidden;
+.superTableCellWrapper {
+  flex: auto;
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+}
+:global(.superTableCell) {
+  flex: auto;
+  display: flex;
+  align-items: stretch;
+  cursor: pointer;
+  padding-left: var(--super-table-cell-padding);
+  padding-right: var(--super-table-cell-padding);
+  border: 1px solid transparent;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+:global(.superTableCell.inEdit) {
+  width: var(--lock-width);
+  max-width: var(--lock-width);
+  color: var(--spectrum-global-color-gray-900);
+  border-color: var(--spectrum-alias-border-color-mouse-focus);
+  background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
+}
+
+:global(.superTableCell.inEdit::before) {
+  content: "";
+  position: absolute;
+  top: 1;
+  right: 1;
+  left: 1;
+  bottom: 1;
+  filter: brightness(100%);
+  background-color: var(--spectrum-textfield-m-background-color);
+}
+:global(.superTableCell.focused) {
+    border-color: var(--spectrum-global-color-gray-500);
   }
-  
+:global(.superTableCell:focus) {
+    outline: none;
+  }
+:global(.overflow) {
+    position: absolute;
+    right: 0;
+    top: 20%;
+    height: 60%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: calc( 4 * var(--super-table-cell-padding));
+    mask-image: linear-gradient(to right, transparent 0%, black 75% );
+    mask-mode: alpha;
+    z-index: 1;
+    transition: all 130ms;
+    border: none;
+  }
+:global(.overflow.inEdit) {
+    width: calc( 6 * var(--super-table-cell-padding));
+    mask-image: linear-gradient(to right, transparent 0%, black 60% );
+  }
 </style>
