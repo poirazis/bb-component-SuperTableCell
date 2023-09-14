@@ -1,18 +1,11 @@
 <script>
-  import { getContext } from "svelte";
-  import { processStringSync }  from "@budibase/string-templates"
-  import { clickOutsideAction } from "svelte-legos";
-  import fsm from "svelte-fsm";
+  import { getContext , createEventDispatcher } from "svelte";
 
-  import CellString from "./cells/CellString.svelte";
-  import CellLink from "./cells/CellLink.svelte";
-  import CellDatetime from "./cells/CellDatetime.svelte";
-  import CellBoolean from "./cells/CellBoolean.svelte"
-  import CellAttachment from "./cells/CellAttachment.svelte";
-  import CellOptions from "./cells/CellOptions.svelte";
-  import CellNumber from "./cells/CellNumber.svelte";
+  import { clickOutsideAction } from "svelte-legos";
+  import SuperCell from "./SuperCell.svelte";
 
   const tableDataChangesStore = getContext("tableDataChangesStore");
+  const dispatch = createEventDispatcher();
 
   export let value
   export let rowKey
@@ -20,50 +13,13 @@
   export let fieldSchema
   export let valueTemplate
   export let submitOn = "onEnter"
-  export let isHovered = false;
-  export let initialState = "View"
+
+  export let cellOptions
 
   let originalValue = Array.isArray(value) ? [ ... value ] : value
+
+  let cellState
   let width
-  let editorState
-
-  const getCellValue = (value, template) => {
-    if (!valueTemplate) {
-      return value
-    }
-    return processStringSync(template, { value })
-  }
-
-  const cellState = fsm( initialState , {
-    "*" : { 
-      focus () { return "Focused" },
-      unfocus () { return "View" },
-      handleKeyboard ( e ) {
-        if ( e.key == "Escape" )
-          this.unfocus()
-      }
-    },
-    View: { },
-    Hovered: { cancel: () => { return "View" }},
-    Focused: { 
-      _enter() { if (editable) this.enterEditing.debounce(50) },
-      enterEditing: "Editing"
-    },
-    Error: { check : "View" },
-    Editing: { 
-      focus() { },
-      unfocus() { 
-        if ( editorState && $editorState == "Closed" ) 
-          return "View" 
-        else if ( editorState == undefined)
-          return "View"
-      },
-      openEditor() { if ( editorState ) editorState.open() },
-      closeEditor() { if ( editorState ) editorState.close() },
-      submit() { if ( value != originalValue ) acceptChange() ; return "View" }, 
-      cancel() { value = Array.isArray(originalValue) ? [ ... originalValue ] : originalValue ; return "View" },
-    }
-  })
 
   function acceptChange ( ) { 
     let newDataChange = {
@@ -87,76 +43,32 @@
     console.log("Change Received", value )
   }
 
-  $: console.log("Cell ", $cellState, initialState)
+  $: console.log(cellState ? $cellState : "No State Yet") 
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div 
-  class="superTableCellWrapper" 
-  on:keydown={cellState.handleKeyboard}
-  on:click={cellState.focus}
+  class="superTableCellWrapper"
+  style:color={cellOptions?.color}
+  class:inEdit={$cellState == "Editing"}
   use:clickOutsideAction
-  on:clickoutside={ () => setTimeout( cellState.unfocus, 10 ) }
+  on:clickoutside={() => { 
+    if ($cellState != "View") {
+      console.log("Clicked Outside")
+      cellState.lostFocus()
+  }}}
+  on:click={cellState.focus}
 >
-  {#if fieldSchema.type === "string" || fieldSchema.type === "longform" || fieldSchema.type === "formula"}
-    <CellString
-      bind:value
-      {cellState}
-      formattedValue = { getCellValue(value, valueTemplate) }
-      {width}
-    />
-  {:else if fieldSchema.type === "number" || fieldSchema.type === "bigint"}
-    <CellNumber
-      inEdit = { $cellState == "Editing"}
-      {width}
-      formattedValue = { getCellValue(value, valueTemplate) }
-      bind:value
-    />
-  {:else if fieldSchema.type === "array" || fieldSchema.type === "options" }
-    <CellOptions
-      bind:value
-      bind:editorState
-      {cellState}
-      {fieldSchema}
-      fadeToColor={ isHovered && $cellState != "Editing" ? "var(--spectrum-global-color-gray-100)" : "var(--spectrum-global-color-gray-50)" }
-      {isHovered} 
-    />
-  {:else if fieldSchema.type === "datetime"}
-    <CellDatetime
-      inEdit = { $cellState == "Editing"}
-      {value}
-      formattedValue = { getCellValue(value, valueTemplate) }
-      on:change={handleChange}
-    />
-  {:else if fieldSchema.type === "link"}
-    <CellLink
-      bind:value
-      bind:editorState
-      {cellState}
-      {fieldSchema}
-      fadeToColor={ isHovered ? "var(--spectrum-global-color-gray-100)" : "var(--spectrum-global-color-gray-50)" }
-      {isHovered}
-    />
-  {:else if fieldSchema.type === "boolean"}
-    <CellBoolean
-      inEdit = { $cellState == "Editing"}
-      on:change={handleChange}
-      {value}
-    />
-  {:else if fieldSchema.type === "attachment"}
-    <CellAttachment
-      {cellState}
-      {editable}
-      {value}
-    />
-  {:else}
-    <CellString
-      bind:value
-      {cellState}
-      formattedValue = { getCellValue(value, valueTemplate) }
-      {width}
-    />
-  {/if}
+  <SuperCell
+    bind:cellState 
+    {value}
+    {valueTemplate}
+    {fieldSchema}
+    {editable}
+    unstyled
+    on:change={handleChange}
+  />
 </div>
 
 <style>
@@ -164,29 +76,29 @@
   flex: auto;
   display: flex;
   align-items: stretch;
+  justify-content: stretch;
   overflow: hidden;
-}
-:global(.superTableCell) {
-  flex: auto;
-  display: flex;
-  align-items: stretch;
-  cursor: pointer;
   padding-left: var(--super-table-cell-padding);
   padding-right: var(--super-table-cell-padding);
   border: 1px solid transparent;
-  min-width: 0;
-  box-sizing: border-box;
 }
 
-:global(.superTableCell.inEdit) {
+:global(.superTableCellWrapper.inEdit) {
   width: var(--lock-width);
   max-width: var(--lock-width);
   color: var(--spectrum-global-color-gray-900);
   border-color: var(--spectrum-alias-border-color-mouse-focus);
   background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
 }
+:global(.superCell.unstyled.inEdit) {
+  width: var(--lock-width);
+  max-width: var(--lock-width);
+  color: var(--spectrum-global-color-gray-900);
+  border-color: transparent;
+  background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
+}
 
-:global(.superTableCell.inEdit::before) {
+:global(.superCell.inEdit::before) {
   content: "";
   position: absolute;
   top: 1;

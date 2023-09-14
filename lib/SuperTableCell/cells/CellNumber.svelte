@@ -3,11 +3,12 @@
 
   export let value
   export let formattedValue
-  export let inEdit
+  export let cellState
 
   const dispatch = createEventDispatcher()
 
   let original
+  $: inEdit = $cellState == "Editing"
 
   onMount(() => {
     original = value
@@ -38,7 +39,7 @@
   }
 </script>
 
-<div class="control">
+<div class="superCell">
   {#if inEdit }
     <input class="inline-edit" type="text" inputmode="numeric" bind:value use:focus on:keydown={keydown} on:blur={submit}/>
   {:else}
@@ -47,27 +48,16 @@
 </div>
 
 <style>
-  .control {
-    flex: auto;
-    display: flex;
-    align-items: stretch;
-    justify-content: stretch;
-  }
-
   .inline-value { 
     flex: auto;
     display: flex;
     justify-content: flex-end;
     align-items: center;
     white-space: nowrap;
-    padding-left: var(--super-table-cell-padding);
-    padding-right: var(--super-table-cell-padding);
   }
   
   input.inline-edit {
     box-sizing: border-box;
-    padding-left: var(--super-table-cell-padding);
-    padding-right: var(--super-table-cell-padding);
     outline: none;
     background: none;
     color: inherit;

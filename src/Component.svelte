@@ -17,7 +17,9 @@
   export let fontColor, fontSize, isBold, isUnderline, isItalic;
 
 
-  console.log("Cell Level Column Options ", $columnOptions)
+  $: cellOptions = {
+    color : fontColor
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -25,6 +27,11 @@
   {#if !columnOptions}
     <p> 🛑 The Super Table Cell can only be used inside a Super Table Column </p>
   {:else}
-    <SuperTableCell {rowKey} {value} fieldSchema={$columnOptions.schema} />
+    <SuperTableCell 
+      {cellOptions}
+      {rowKey} 
+      {value} 
+      fieldSchema={$columnOptions.schema} 
+    />
   {/if}
 </div>

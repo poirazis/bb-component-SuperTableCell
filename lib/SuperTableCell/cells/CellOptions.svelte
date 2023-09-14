@@ -2,7 +2,7 @@
   import Icon from "../../../node_modules/@budibase/bbui/src/Icon/Icon.svelte";
   import Popover from "../../../node_modules/@budibase/bbui/src/Popover/Popover.svelte";
   import fsm from "svelte-fsm";
-  import { onMount, beforeUpdate } from "svelte"
+  import { onMount, createEventDispatcher ,beforeUpdate } from "svelte"
   import { flip } from 'svelte/animate';
 
   export let cellState
@@ -15,6 +15,9 @@
   export let placeholder = multi ? "Choose options" : "Choose an option";
   export let fadeToColor = "var(--spectrum-global-color-gray-50)"
   export let optionIcon = "LoupeView"
+  export let unstyled
+
+  const dispatch = createEventDispatcher()
 
   let anchor;
   let valueAnchor
@@ -26,10 +29,15 @@
     "*": {
       handleKeyboard( e ) { }
     },
-    Open: { 
+    Open: {  
       close() { return "Closed" },
       toggle() { return "Closed" },
-      toggleOption ( idx ) { toggleOption(options[idx]); if (!multi) this.close.debounce(100)},
+      toggleOption ( idx ) { 
+        dispatch("change", value )
+        toggleOption(options[idx]); 
+        if (!multi) this.close.debounce(100)
+        d
+      },
       highlightNext () { 
         if ( focusedOptionIdx == options.length - 1 )
           focusedOptionIdx = 0
@@ -104,21 +112,23 @@
   beforeUpdate ( () => { 
     overflow = valueAnchor ? valueAnchor.clientWidth != valueAnchor.scrollWidth : undefined
   } )
-  onMount( () => lockWidth = anchor.clientWidth )
-
+  onMount( () => { 
+    lockWidth = anchor.clientWidth 
+    if ( $cellState != "View" )
+      anchor.focus();
+  } )
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 <div 
   bind:this={anchor} 
-  class="superTableCell" 
+  class="superCell" 
   class:inEdit
+  class:unstyled
   class:focused={$cellState == "Focused"}
   tabindex="0" 
   on:keydown={handleKeyboard} 
-  on:focus={ cellState.focus }
-  on:blur={ () => { setTimeout ( cellState.unfocus, 10 ) } }
 >
   <div bind:this={valueAnchor} class="inline-value" >
     {#if value.length < 1 && inEdit}
@@ -134,10 +144,10 @@
 
     {#if overflow && inEdit}
       <div class="overflow" class:inEdit style:background-color={ fadeToColor } >
-          <Icon name="ChevronDown" hoverable on:click={cellState.openEditor} />
+        <Icon name="ChevronDown" hoverable on:click={editorState.open} />
       </div>
     {:else if inEdit}
-      <Icon name="ChevronDown" hoverable on:click={cellState.openEditor} />
+      <Icon name="ChevronDown" hoverable on:click={editorState.open} />
     {:else if overflow}
       <div class="overflow" style:background-color={fadeToColor} ></div>
     {/if}
@@ -175,7 +185,7 @@
             <div
               class="option"
               class:focused={focusedOptionIdx === idx}
-              on:click|preventDefault={(e) => editorState.toggleOption(idx)}
+              on:click|preventDefault|stopPropagation={(e) => editorState.toggleOption(idx)}
               on:mouseenter={() => (focusedOptionIdx = idx)}
             >
               <div class="option text">

@@ -1,4 +1,6 @@
 <script>
+  import { createEventDispatcher } from "svelte";
+
   export let value = ""
   export let cellState
   export let formattedValue
@@ -6,10 +8,13 @@
   export let padded = false
   export let placeholder = "Enter ... "
   export let debounced
+  export let unstyled = false
 
   const focus = (node) => {
     node.focus();
   }
+
+  const dispatch = createEventDispatcher();
 
   let timer;
 	const debounce = e => {
@@ -17,46 +22,37 @@
       clearTimeout(timer);
       timer = setTimeout(() => {
         value = e.target.value
+        dispatch("change", value )
       }, debounced ?? 0 );
     }
     else {
      value = e.target.value
+     dispatch("change", value )
     }
+
 	}
 
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 <div 
-  class="control" 
+  class="superCell"
+  class:unstyled 
   class:inEdit={ $cellState == "Editing" }
   style:max-width={width} 
-  tabIndex="0" 
-  on:focus={ cellState.focus }
 >
-
   {#if $cellState == "Editing" }
-    <input class="inline-edit" {value} class:padded {placeholder} on:input={debounce} use:focus on:blur={cellState.unfocus} />
+    <input class="inline-edit" {value} {placeholder} on:input={debounce} use:focus on:blur={cellState.unfocus} />
   {:else}
-    <p class="value"> {formattedValue || value || "" } </p>
+    <div class="value"> {formattedValue || value || "" } </div>
   {/if}
 </div>
 
 <style>
-  .control {
-    flex: auto;
-    display: flex;
-    align-items: center;
-    justify-content: var(--super-column-alignment);
-    overflow: hidden;
-    box-sizing: border-box;
-    padding-left: var(--super-table-cell-padding);
-    padding-right: var(--super-table-cell-padding);
-    min-width: 0;
-    border: 1px solid transparent;
-  }
 
   .value {
+    display: flex;
+    align-items: center;
     box-sizing: border-box;
     overflow: hidden;
     white-space: nowrap;
@@ -72,10 +68,11 @@
     border: none;
     cursor: pointer;
     overflow: hidden;
+    min-width: unset;
   }
 
   .inline-edit:focus {
-    min-width: unset;;
+    min-width: unset;
   }
 
   .inline-edit::placeholder {

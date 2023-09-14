@@ -45,7 +45,7 @@
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 <div 
   bind:this={anchor} 
-  class="superTableCell" 
+  class="superCell" 
   class:inEdit
   class:focused={$cellState == "Focused"}
   tabindex="0" 

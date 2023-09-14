@@ -4,7 +4,10 @@
   import Icon from "../../../node_modules/@budibase/bbui/src/Icon/Icon.svelte"
 
   export let value
-  export let inEdit
+  export let formattedValue
+  export let cellState
+  export let fieldSchema
+  export let unstyled
 
   const dispatch = createEventDispatcher()
 
@@ -12,19 +15,23 @@
 
 </script>
 
-<div class="control" class:inEdit> 
-  {#if !inEdit}
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="inline-value" > 
-    {#if value}
-      <Icon size="XS" name="Checkmark" color={"lime"}/>
-    {/if}
-  </div>
-  {:else}
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<div 
+  class="superCell" 
+  class:inEdit={ $cellState == "Editing" }
+  class:unstyled
+  >
+    {#if $cellState == "Editing" }
+      <div class="inline-value" > 
+        <Switch {value} on:change={(e) => dispatch("change", { value: e.detail } )}/>
+      </div>
+    {:else}
     <div class="inline-value" > 
-      <Switch {value} on:change={(e) => dispatch("change", { value: e.detail } )}/>
+      {#if value}
+        <Icon size="XS" name="Checkmark" color={"lime"}/>
+      {/if}
     </div>
-  {/if}
+    {/if}
 </div>
 
 <style>
@@ -33,15 +40,6 @@
     display: flex;
     justify-content: var(--super-column-alignment);
     align-items: center;
-    padding-left: var(--super-table-cell-padding);
-    padding-right: var(--super-table-cell-padding);
-  }
-
-  .control {
-    flex: auto;
-    display: flex;
-    align-items: stretch;
-    justify-content: stretch;
   }
 
   .inEdit {
