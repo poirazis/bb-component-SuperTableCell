@@ -12,7 +12,7 @@
 
 </script>
 
-<div class="superCell" class:inEdit>
+<div class="superCell">
   {#if inEdit}
     <div class="pickerWrapper">
       <DatePicker {value} on:change={(e) => dispatch("change", {value : e.detail } ) } />
@@ -33,18 +33,19 @@
   }
 
   :global(.pickerWrapper > .spectrum-Datepicker > .spectrum-Textfield > .spectrum-Textfield-input ) {
+    background-color: unset;
+    border: unset;
+    padding: unset;
+  }
+  :global(.pickerWrapper > .spectrum-Datepicker > .spectrum-Textfield ) {
+    background-color: unset;
     border: unset;
     padding: unset;
   }
   :global(.pickerWrapper > .spectrum-Datepicker > .spectrum-Picker ) {
-    background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
+    background: unset;
     border: unset;
     padding: unset;
-  }
-
-
- .inEdit {
-    background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
   }
   .inline-value { 
     flex-grow: 1;
@@ -53,4 +54,5 @@
     justify-content: var(--super-column-alignment);
     align-items: center;
   }
+
 </style>

@@ -11,7 +11,15 @@
 
   const dispatch = createEventDispatcher()
 
-  $: dispatch("change", { value : value} )
+  const handleKeyboard = ( e ) => {
+    if ( e.keyCode == 32 ) {
+      e.stopPropagation();
+      e.preventDefault();
+      value = !value
+    }
+  }
+
+  $: dispatch("change", value )
 
 </script>
 
@@ -20,6 +28,8 @@
   class="superCell" 
   class:inEdit={ $cellState == "Editing" }
   class:unstyled
+  tabindex="-1"
+  on:keydown={handleKeyboard}
   >
     {#if $cellState == "Editing" }
       <div class="inline-value" > 
@@ -40,9 +50,5 @@
     display: flex;
     justify-content: var(--super-column-alignment);
     align-items: center;
-  }
-
-  .inEdit {
-    background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
   }
 </style>

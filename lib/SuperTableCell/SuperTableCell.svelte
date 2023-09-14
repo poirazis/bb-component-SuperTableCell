@@ -39,10 +39,17 @@
 
 
   function handleChange ( e ) {
-    value = e.detail.value
+    value = e.detail
     console.log("Change Received", value )
   }
 
+  const handleKeyboard = ( e ) => {
+    if (e.key == "Escape" ) {
+      e.stopPropagation();
+      e.preventDefault();
+      cellState.unfocus();
+    }
+  }
   $: console.log(cellState ? $cellState : "No State Yet") 
 </script>
 
@@ -52,7 +59,9 @@
   class="superTableCellWrapper"
   style:color={cellOptions?.color}
   class:inEdit={$cellState == "Editing"}
+  tabindex="-1"
   use:clickOutsideAction
+  on:keydown={handleKeyboard}
   on:clickoutside={() => { 
     if ($cellState != "View") {
       console.log("Clicked Outside")
@@ -81,32 +90,24 @@
   padding-left: var(--super-table-cell-padding);
   padding-right: var(--super-table-cell-padding);
   border: 1px solid transparent;
+  min-width: 0;
 }
 
 :global(.superTableCellWrapper.inEdit) {
   width: var(--lock-width);
   max-width: var(--lock-width);
   color: var(--spectrum-global-color-gray-900);
-  border-color: var(--spectrum-alias-border-color-mouse-focus);
-  background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
+  border-color: var(--spectrum-global-color-gray-600);
 }
-:global(.superCell.unstyled.inEdit) {
-  width: var(--lock-width);
-  max-width: var(--lock-width);
-  color: var(--spectrum-global-color-gray-900);
-  border-color: transparent;
-  background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
-}
-
-:global(.superCell.inEdit::before) {
+:global(.superTableCellWrapper.inEdit::before) {
   content: "";
   position: absolute;
   top: 1;
   right: 1;
   left: 1;
   bottom: 1;
-  filter: brightness(100%);
-  background-color: var(--spectrum-textfield-m-background-color);
+  filter: brightness(80%);
+  background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
 }
 :global(.superTableCell.focused) {
     border-color: var(--spectrum-global-color-gray-500);

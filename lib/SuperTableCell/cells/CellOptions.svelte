@@ -33,10 +33,9 @@
       close() { return "Closed" },
       toggle() { return "Closed" },
       toggleOption ( idx ) { 
-        dispatch("change", value )
         toggleOption(options[idx]); 
         if (!multi) this.close.debounce(100)
-        d
+        dispatch("change", value )
       },
       highlightNext () { 
         if ( focusedOptionIdx == options.length - 1 )
@@ -127,7 +126,7 @@
   class:inEdit
   class:unstyled
   class:focused={$cellState == "Focused"}
-  tabindex="0" 
+  tabindex="-1" 
   on:keydown={handleKeyboard} 
 >
   <div bind:this={valueAnchor} class="inline-value" >

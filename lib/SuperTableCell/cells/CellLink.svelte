@@ -36,7 +36,11 @@
   }
 
   const handleKeyboard = ( e ) => {
-
+    if ( e.keyCode == 32 ) {
+      e.preventDefault();
+      e.stopPropagation();
+      editorState.toggle();
+    }
   }
   beforeUpdate ( () => overflow = valueAnchor ? valueAnchor.clientWidth < valueAnchor.scrollWidth : false )
 </script>

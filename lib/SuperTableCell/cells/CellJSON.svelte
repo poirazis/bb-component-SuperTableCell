@@ -79,14 +79,4 @@
     color: var(--primaryColor);
     font-style: italic;
   }
-
-  .padded {
-    padding-left: var(--super-table-cell-padding);
-    padding-right: var(--super-table-cell-padding);
-  }
-  .inEdit {
-    color: var(--spectrum-global-color-gray-900);
-    border-color: var(--spectrum-alias-border-color-mouse-focus);
-    background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
-  }
 </style>

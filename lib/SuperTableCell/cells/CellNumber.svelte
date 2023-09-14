@@ -68,6 +68,5 @@
     width: 100%;
     min-width: none;
     text-align: right;
-    background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
   }
 </style>

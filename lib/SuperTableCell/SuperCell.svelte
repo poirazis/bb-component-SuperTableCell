@@ -145,7 +145,10 @@
     align-items: stretch;
     cursor: pointer;
     min-width: 0;
-    box-sizing: border-box;
+    z-index: 1;
+  }
+  :global(.superCell:focus) {
+    outline: none;
   }
 
   :global(.superCell.unstyled) {
