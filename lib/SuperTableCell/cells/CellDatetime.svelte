@@ -37,9 +37,9 @@
     padding: unset;
   }
   :global(.pickerWrapper > .spectrum-Datepicker > .spectrum-Picker ) {
-    padding: 0.2rem;
     background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
-    border: none;
+    border: unset;
+    padding: unset;
   }
 
 

@@ -9,6 +9,7 @@
   import CellAttachment from "./cells/CellAttachment.svelte";
   import CellOptions from "./cells/CellOptions.svelte";
   import CellNumber from "./cells/CellNumber.svelte";
+  import CellJson from "./cells/CellJSON.svelte";
 
   export let value 
   export let valueTemplate
@@ -125,7 +126,7 @@
     on:blur
   />
 {:else if fieldSchema.type === "json"  }
-  <CellBoolean
+  <CellJson
     bind:editorState={innerCellState}
     {cellState}
     {value}
