@@ -150,18 +150,23 @@
     min-width: 0;
     position: relative;
     z-index: 1;
+    border: 1px solid var(--spectrum-global-color-gray-300);
+    background-color: var(--spectrum-global-color-blue-100);
+  }
+  :global(.superCell.inEdit) {
+    border: 1px solid var(--spectrum-global-color-gray-300);
+    background-color: var(--spectrum-global-color-gray-50);
+  }
+  :global(.superCell.unstyled) {
+    border: unset;
+    background-color: unset;
+  }
+  :global(.superCell.unstyled.inEdit ) {
+    border: unset;
+    background-color: unset;
   }
   :global(.superCell:focus) {
     outline: none;
-  }
-
-  :global(.superCell.unstyled) {
-    flex: auto;
-    display: flex;
-    align-items: stretch;
-    cursor: pointer;
-    min-width: 0;
-    box-sizing: border-box;
   }
   :global(.overflow) {
     position: absolute;
@@ -180,5 +185,7 @@
   :global(.overflow.inEdit) {
     width: calc( 4 * var(--super-table-cell-padding));
     mask-image: linear-gradient(to right, transparent 0%, black 50% );
+    border: 1px solid var(--spectrum-global-color-gray-300);
+    background-color: var(--spectrum-global-color-gray-50);
   }
 </style>

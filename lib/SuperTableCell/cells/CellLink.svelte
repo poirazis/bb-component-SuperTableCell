@@ -13,6 +13,7 @@
   export let isHovered;
   export let placeholder
   export let fadeToColor = "var(--spectrum-global-color-gray-50)"
+  export let unstyled
 
   export let editorState=fsm("Closed", {
     Open: { toggle: "Closed" },
@@ -53,7 +54,9 @@
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 <div 
   bind:this={anchor} 
-  class="superCell" 
+  class="superCell"
+  class:inEdit
+  class:unstyled
   class:focused={$cellState == "Focused"}
   tabindex="0" 
   on:keydown={handleKeyboard} 
