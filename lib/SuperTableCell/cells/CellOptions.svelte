@@ -140,19 +140,18 @@
           </div>
       {/each}
     {/if}
-
-    {#if overflow && inEdit}
-      <div class="overflow" class:inEdit style:background-color={ fadeToColor } >
-        <Icon name="ChevronDown" hoverable on:click={editorState.open} />
-      </div>
-    {:else if inEdit}
-      <Icon name="ChevronDown" hoverable on:click={editorState.open} />
-    {:else if overflow}
-      <div class="overflow" style:background-color={fadeToColor} ></div>
-    {/if}
-
   </div>
 
+  {#if overflow && inEdit}
+    <div class="overflow" class:inEdit style:background-color={ fadeToColor } >
+      <Icon name="ChevronDown" hoverable on:click={editorState.open} />
+    </div>
+  {:else if inEdit}
+    <Icon name="ChevronDown" hoverable on:click={editorState.open} />
+  {:else if overflow}
+    <div class="overflow" style:background-color={fadeToColor} ></div>
+  {/if}
+  
   <Popover 
     {anchor} 
     useAnchorWidth={!multi}

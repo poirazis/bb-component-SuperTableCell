@@ -1,5 +1,5 @@
 <script>
-  import { getContext , createEventDispatcher } from "svelte";
+  import { getContext , beforeUpdate, createEventDispatcher } from "svelte";
 
   import { clickOutsideAction } from "svelte-legos";
   import SuperCell from "./SuperCell.svelte";
@@ -13,6 +13,7 @@
   export let fieldSchema
   export let valueTemplate
   export let submitOn = "onEnter"
+  export let isHovered = false
 
   export let cellOptions
 
@@ -50,21 +51,32 @@
       cellState.unfocus();
     }
   }
+
+  let wrapperAnchor
+  let focusedOrHasFocused
+
   $: console.log(cellState ? $cellState : "No State Yet") 
+
+  // We need to know if our child Super Cell has the focus
+  beforeUpdate( () => {
+    focusedOrHasFocused = wrapperAnchor?.matches(":focus-within") ?? false
+  })
+
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div 
+  bind:this={wrapperAnchor}
   class="superTableCellWrapper"
   style:color={cellOptions?.color}
-  class:inEdit={$cellState == "Editing"}
+  class:inEdit={$cellState == "Editing" }
+  class:focused={focusedOrHasFocused}
   tabindex="-1"
   use:clickOutsideAction
   on:keydown={handleKeyboard}
   on:clickoutside={() => { 
-    if ($cellState != "View") {
-      console.log("Clicked Outside")
+    if ( $cellState != "View") {
       cellState.lostFocus()
   }}}
   on:click={cellState.focus}
@@ -75,6 +87,7 @@
     {valueTemplate}
     {fieldSchema}
     {editable}
+    {isHovered}
     unstyled
     on:change={handleChange}
   />
@@ -93,13 +106,13 @@
   min-width: 0;
 }
 
-:global(.superTableCellWrapper.inEdit) {
+.superTableCellWrapper.inEdit {
   width: var(--lock-width);
   max-width: var(--lock-width);
   color: var(--spectrum-global-color-gray-900);
   border-color: var(--spectrum-global-color-gray-600);
 }
-:global(.superTableCellWrapper.inEdit::before) {
+.superTableCellWrapper.inEdit::before {
   content: "";
   position: absolute;
   top: 1;
@@ -109,29 +122,14 @@
   filter: brightness(80%);
   background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
 }
-:global(.superTableCell.focused) {
+.superTableCellWrapper.focused {
     border-color: var(--spectrum-global-color-gray-500);
   }
-:global(.superTableCell:focus) {
+.superTableCellWrapper:focus-within {
+    border-color: var(--spectrum-global-color-blue-500);
+  }
+.superTableCellWrapper:focus {
     outline: none;
-  }
-:global(.overflow) {
-    position: absolute;
-    right: 0;
-    top: 20%;
-    height: 60%;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    width: calc( 4 * var(--super-table-cell-padding));
-    mask-image: linear-gradient(to right, transparent 0%, black 75% );
-    mask-mode: alpha;
-    z-index: 1;
-    transition: all 130ms;
-    border: none;
-  }
-:global(.overflow.inEdit) {
-    width: calc( 6 * var(--super-table-cell-padding));
-    mask-image: linear-gradient(to right, transparent 0%, black 60% );
+    border-color: var(--spectrum-global-color-red-500);
   }
 </style>

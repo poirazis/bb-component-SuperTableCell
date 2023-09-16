@@ -3,6 +3,7 @@
   import Popover from "../../../node_modules/@budibase/bbui/src/Popover/Popover.svelte";
   import fsm from "svelte-fsm";
   import { createEventDispatcher, beforeUpdate } from "svelte";
+  import { flip } from "svelte/animate"
   import CellLinkPicker from "./CellLinkPicker.svelte";
   const dispatch = createEventDispatcher();
 
@@ -10,16 +11,17 @@
   export let cellState
   export let fieldSchema;
   export let isHovered;
-  export let fadeToColor
+  export let placeholder
+  export let fadeToColor = "var(--spectrum-global-color-gray-50)"
 
-  export let editorState= fsm("Closed", {
+  export let editorState=fsm("Closed", {
     Open: { toggle: "Closed" },
     Closed: { toggle: "Open" },
   });
 
   let anchor;
   let valueAnchor
-  let overflow = false
+  let overflow
 
   $: inEdit = $cellState == "Editing"
 
@@ -42,7 +44,9 @@
       editorState.toggle();
     }
   }
-  beforeUpdate ( () => overflow = valueAnchor ? valueAnchor.clientWidth < valueAnchor.scrollWidth : false )
+  beforeUpdate ( () => { 
+    overflow = valueAnchor ? valueAnchor.clientWidth != valueAnchor.scrollWidth : undefined
+  } )
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -50,64 +54,59 @@
 <div 
   bind:this={anchor} 
   class="superCell" 
-  class:inEdit
   class:focused={$cellState == "Focused"}
   tabindex="0" 
   on:keydown={handleKeyboard} 
-  on:focus={ cellState.focus }
-  on:blur={ () => { setTimeout ( cellState.unfocus, 10 ) } }
 >
   <div bind:this={valueAnchor} class="inline-value">
-    {#if inEdit}
-      <Icon name="Add" hoverable size="S" on:click={(e) => openPicker(e)} />
-    {/if}
-
-    {#if value}
-      {#each value as row }
-        <div class="item" >
-          {#if inEdit}
-            <Icon size="XS" name="Unlink" hoverable color={"var(--primaryColor)"} on:click={ (e) => { e.stopPropagation(); unselectRow(row); } }/>
-          {/if}
-          {row.primaryDisplay}
+    {#if value.length < 1 && inEdit}
+      <span class="placeholder">{ placeholder } </span>
+    {:else if value.length > 0}
+      {#each value as val (val)}
+        <div animate:flip={{ duration: 130 }} class="item text">
+          <span> {val.primaryDisplay} </span>
         </div>
       {/each}
     {/if}
-
-    {#if overflow }
-      <div class="overflow" style:background-color={fadeToColor} >
-        {#if isHovered}
-          <div class="circle">{value.length}</div>
-        {/if}
-      </div>
-    {/if}
-
   </div>
-  
-  {#if inEdit}
-    <Popover {anchor} align = "left" open={$editorState == "Open"} on:close={editorState.toggle}>
-      <CellLinkPicker 
-        active = { $editorState == "Open" } 
-        {value} 
-        tableId={fieldSchema.tableId} 
-        on:change={(e) => value = e.detail.value }
-      />
-    </Popover>
-  {/if}
 
+  {#if overflow}
+    <div class="overflow" class:inEdit={inEdit || isHovered} style:background-color={ fadeToColor } >
+      {#if inEdit}
+        <Icon name="Add" hoverable size="S" on:click={(e) => openPicker(e)} />
+      {:else if isHovered}
+        <div class="circle"> { value.length } </div>
+      {/if}
+    </div>
+  {:else}
+    {#if inEdit}
+      <Icon name="Add" hoverable size="S" on:click={(e) => openPicker(e)} />
+    {/if}
+  {/if}
 </div>
+
+<Popover 
+  {anchor} 
+  dismissible
+  align={"left"} 
+  open={ $editorState == "Open" } 
+  on:close={ editorState.toggle }
+  >
+  <CellLinkPicker {value} tableId={fieldSchema.tableId} />
+</Popover>
 
 <style>
   .circle {
-    width: 20px;
-    height: 20px;
-    font-size: 14px;
+    width: 22px;
+    height: 22px;
+    font-size: 15px;
     font-weight: bold;
     display: flex;
     align-items: center;
+    align-self: center;
     justify-content: center;
     border-radius: 50%;
-    background-color: var(--spectrum-global-color-gray-400);
-    color: var(--spectrum-global-color-gray-800);
+    color: var(--spectrum-global-color-gray-600);
     z-index: 3;
   }
   .inline-value {

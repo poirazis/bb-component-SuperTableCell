@@ -18,6 +18,7 @@
   export let initialState = "View"
   export let lockState
   export let unstyled
+  export let isHovered
 
   let innerCellState
 
@@ -27,13 +28,14 @@
     Focused: { 
       _enter() { if (editable) this.enterEditing.debounce(50) },
       unfocus() { return "View" },
+      lostFocus() { this.unfocus.debounce(50) },
       enterEditing: "Editing",
     },
     Error: { check : "View" },
     Editing: { 
       focus() {},
       unfocus() { if (!innerCellState || $innerCellState == "Closed" ) return "View" },
-      lostFocus() { this.unfocus.debounce(10) },
+      lostFocus() { this.unfocus.debounce(50) },
       submit() { if ( value != originalValue ) acceptChange() ; return "View" }, 
       cancel() { value = Array.isArray(originalValue) ? [ ... originalValue ] : originalValue ; return "View" },
     }
@@ -100,6 +102,7 @@
     {fieldSchema}
     formattedValue = { getCellValue(value, valueTemplate) }
     {unstyled}
+    {isHovered}
     on:change
     on:blur
   />
@@ -145,6 +148,7 @@
     align-items: stretch;
     cursor: pointer;
     min-width: 0;
+    position: relative;
     z-index: 1;
   }
   :global(.superCell:focus) {
@@ -158,5 +162,23 @@
     cursor: pointer;
     min-width: 0;
     box-sizing: border-box;
+  }
+  :global(.overflow) {
+    position: absolute;
+    right: 0;
+    top: 20%;
+    height: 60%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: calc( 2 * var(--super-table-cell-padding));
+    mask-image: linear-gradient(to right, transparent 0%, black 65% );
+    mask-mode: alpha;
+    z-index: 1;
+    transition: all 130ms;
+  }
+  :global(.overflow.inEdit) {
+    width: calc( 4 * var(--super-table-cell-padding));
+    mask-image: linear-gradient(to right, transparent 0%, black 50% );
   }
 </style>

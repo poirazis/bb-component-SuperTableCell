@@ -44,6 +44,7 @@
       {value} 
       {placeholder} 
       on:input={debounce}
+      on:blur
       use:focus
     />
   {:else}
