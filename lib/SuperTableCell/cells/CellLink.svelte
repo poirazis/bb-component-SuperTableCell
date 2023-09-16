@@ -123,7 +123,7 @@
     display: flex;
     align-items: center;
     border-radius: 4px;
-    background-color: var(--super-table-relItem-bg-color);
+    background-color: var(--spectrum-global-color-gray-600);
     height: 60%;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
