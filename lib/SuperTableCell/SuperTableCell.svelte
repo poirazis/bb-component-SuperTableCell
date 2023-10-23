@@ -3,6 +3,7 @@
 
   import { clickOutsideAction } from "svelte-legos";
   import SuperCell from "./SuperCell.svelte";
+  import { processStringSync }  from "@budibase/string-templates"
 
   const tableDataChangesStore = getContext("tableDataChangesStore");
   const dispatch = createEventDispatcher();
@@ -14,13 +15,30 @@
   export let valueTemplate
   export let submitOn = "onEnter"
   export let isHovered = false
-
-  export let cellOptions
+  export let enrichedColumnOptions
 
   let originalValue = Array.isArray(value) ? [ ... value ] : value
 
   let cellState
   let width
+
+  const getCellColor = (value, template) => {
+    if (!template) {
+      return null
+    }
+    return processStringSync(template,  { Value: value }  )
+  }
+
+  /** @type {cellOptions} */
+  $: cellOptions = {
+    align: enrichedColumnOptions.align,
+    color: getCellColor( value, enrichedColumnOptions?.color ),
+    background: enrichedColumnOptions.background,
+    bold: enrichedColumnOptions.bold,
+    fontWeight: getCellColor( value, enrichedColumnOptions?.fontWeight ),
+  }
+
+  console.log(enrichedColumnOptions.color)
 
   function acceptChange ( ) { 
     let newDataChange = {
@@ -55,8 +73,6 @@
   let wrapperAnchor
   let focusedOrHasFocused
 
-  $: console.log(cellState ? $cellState : "No State Yet") 
-
   // We need to know if our child Super Cell has the focus
   beforeUpdate( () => {
     focusedOrHasFocused = wrapperAnchor?.matches(":focus-within") ?? false
@@ -69,20 +85,22 @@
 <div 
   bind:this={wrapperAnchor}
   class="superTableCellWrapper"
-  style:color={cellOptions?.color}
+  style:--lock-width={width}
   class:inEdit={$cellState == "Editing" }
   class:focused={focusedOrHasFocused}
-  tabindex="-1"
+  tabindex="0"
   use:clickOutsideAction
   on:keydown={handleKeyboard}
   on:clickoutside={() => { 
-    if ( $cellState != "View") {
+    if ( cellState && $cellState != "View") {
       cellState.lostFocus()
   }}}
-  on:click={cellState.focus}
+  on:click={() => { width = wrapperAnchor.clietWidth ; cellState.focus() }}
+  on:focus={() => cellState.focus() }
 >
   <SuperCell
     bind:cellState 
+    {cellOptions}
     {value}
     {valueTemplate}
     {fieldSchema}

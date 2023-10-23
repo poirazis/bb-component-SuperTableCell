@@ -1,5 +1,5 @@
 <script>
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import Switch from "../../../node_modules/@budibase/bbui/src/Form/Core/Switch.svelte"
   import Icon from "../../../node_modules/@budibase/bbui/src/Icon/Icon.svelte"
 
@@ -18,8 +18,6 @@
       value = !value
     }
   }
-
-  $: dispatch("change", value )
 
 </script>
 

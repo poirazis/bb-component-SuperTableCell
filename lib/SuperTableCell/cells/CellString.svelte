@@ -8,6 +8,7 @@
   export let placeholder = "Enter ... "
   export let debounced
   export let unstyled = false
+  export let cellOptions
 
   const focus = (node) => {
     node.focus();
@@ -35,8 +36,12 @@
 <div 
   class="superCell"
   class:unstyled 
+  style:color={cellOptions?.color}
+  style:background={cellOptions?.background}
   class:inEdit={ $cellState == "Editing" }
+  style:font-weight={ cellOptions?.fontWeight ? cellOptions?.fontWeight : "500"}
   style:max-width={width} 
+
 >
   {#if $cellState == "Editing" }
     <input 
@@ -48,7 +53,8 @@
       use:focus
     />
   {:else}
-    <div class="value"> {formattedValue || value || "" } </div>
+    <div class="value" 
+    style:justify-content={cellOptions.align}> {formattedValue || value || "" } </div>
   {/if}
 </div>
 
@@ -58,7 +64,6 @@
     flex: auto;
     display: flex;
     align-items: center;
-    box-sizing: border-box;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;

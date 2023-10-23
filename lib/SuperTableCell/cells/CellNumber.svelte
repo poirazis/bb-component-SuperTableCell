@@ -1,72 +1,87 @@
 <script>
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
 
-  export let value
+  export let value = null
   export let formattedValue
   export let cellState
+  export let unstyled
+  export let placeholder = "Enter..."
+  export let debounced
 
   const dispatch = createEventDispatcher()
 
-  let original
   $: inEdit = $cellState == "Editing"
 
-  onMount(() => {
-    original = value
-  })
+  let timer;
+	const debounce = e => {
+    value = e.target.value
 
-  function submit(event) {
-    event.preventDefault()
-    if (value != original) {
-      dispatch('change', { value: value })
-    } else {
-      dispatch("cancelEdit")
+    if (debounced) {    
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        dispatch("change", value )
+      }, debounced ?? 0 );
     }
-  }
-
-  function keydown(event) {
-    if (event.key == 'Escape') {
-      event.preventDefault()
-      value = original
-      dispatch("cancelEdit")
-    } else if ( event.key == "Enter" ) {
-      event.preventDefault()
-      dispatch('change', { value: value })
+    else {
+     dispatch("change", value )
     }
-  }
+	}
 
   function focus(element) {
     element.focus()
   }
 </script>
 
-<div class="superCell">
-  {#if inEdit }
-    <input class="inline-edit" type="text" inputmode="numeric" bind:value use:focus on:keydown={keydown} on:blur={submit}/>
+<div class="superCell"
+  class:inEdit
+  class:unstyled
+>
+  {#if inEdit}
+    <input 
+      class="inline-edit" 
+      inputmode="numeric"
+      {value} 
+      {placeholder} 
+      on:input={debounce}
+      on:blur
+      use:focus
+    />
   {:else}
-    <div class="inline-value"> { formattedValue || value || "" } </div>
+   <div class="value"> {formattedValue || value || "" } </div>
   {/if}
 </div>
 
 <style>
-  .inline-value { 
+  .value {
     flex: auto;
     display: flex;
-    justify-content: flex-end;
     align-items: center;
+    justify-content: flex-end;
+    box-sizing: border-box;
     white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
   }
-  
-  input.inline-edit {
+  .inline-edit {
+    width: 100%;
+    height: 100%;
     box-sizing: border-box;
     outline: none;
     background: none;
     color: inherit;
     border: none;
-    font: inherit;
     cursor: pointer;
-    height: 100%;
-    width: 100%;
-    min-width: none;
+    overflow: hidden;
+    min-width: unset;
     text-align: right;
+  }
+
+  .inline-edit:focus {
+    min-width: unset;
+  }
+
+  .inline-edit::placeholder {
+    color: var(--primaryColor);
+    font-style: italic;
   }
 </style>

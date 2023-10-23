@@ -5,17 +5,28 @@
   export let value
   export let cellState
   export let formattedValue
+  export let unstyled
+  export let width
 
   const dispatch = createEventDispatcher()
 
-  $: inEdit = $cellState == "Editing"
+  $: inEdit = $cellState == "Editing" || $cellState == "EditingWithEditor"
 
 </script>
 
-<div class="superCell">
+<div 
+  class="superCell"
+  class:unstyled 
+  class:inEdit
+  style:max-width={width} 
+>
   {#if inEdit}
     <div class="pickerWrapper">
-      <DatePicker {value} on:change={(e) => dispatch("change", {value : e.detail } ) } />
+      <DatePicker 
+        {value} 
+        on:open={cellState.openEditor}
+        on:close={cellState.closeEditor}
+        on:change={(e) => dispatch("change", e.detail ) } />
     </div>
   {:else}
     <div class="inline-value"> 

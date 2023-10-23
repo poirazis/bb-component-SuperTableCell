@@ -1,4 +1,12 @@
 <script>
+    /**
+   * The complete set of options that can be passed to a Super Cell.
+   * @typedef {Object} cellOptions
+   * @property {string} align - Horizontal Alignment
+   * @property {boolean} bold - Use Bold Font
+   * @property {boolean} italic - Use Italic Font
+   */
+
   import { processStringSync }  from "@budibase/string-templates"
   import  fsm  from "svelte-fsm"
 
@@ -20,10 +28,21 @@
   export let unstyled
   export let isHovered
 
+  /**
+   * @type {cellOptions}
+   */
+  export let cellOptions
+
   let innerCellState
 
+  export const isActive = ( ) => { return (!innerCellState || $innerCellState == "Closed" ) }
+
   export let cellState = fsm( initialState , {
-    View: { focus () { return "Focused" }, },
+    "*": {
+      goTo( state ) { return state }
+    },
+    View: { 
+      focus () { return "Focused" }, },
     Hovered: { cancel: () => { return "View" }},
     Focused: { 
       _enter() { if (editable) this.enterEditing.debounce(50) },
@@ -33,11 +52,20 @@
     },
     Error: { check : "View" },
     Editing: { 
+      openEditor() { return "EditingWithEditor" },
       focus() {},
-      unfocus() { if (!innerCellState || $innerCellState == "Closed" ) return "View" },
-      lostFocus() { this.unfocus.debounce(50) },
+      unfocus( fn ) { 
+        if (innerCellState == undefined || $innerCellState == "Closed" ) {
+          fn?.();
+        } 
+        if (!lockState) return "View";
+      },
+      lostFocus( fn ) { this.unfocus.debounce(50, fn) },
       submit() { if ( value != originalValue ) acceptChange() ; return "View" }, 
       cancel() { value = Array.isArray(originalValue) ? [ ... originalValue ] : originalValue ; return "View" },
+    },
+    EditingWithEditor: { 
+      closeEditor() { return "Editing" }
     }
   })
 
@@ -47,11 +75,11 @@
     }
     return processStringSync(template, { value })
   }
-
 </script>
 
 {#if fieldSchema.type === "string" || fieldSchema.type === "longform" || fieldSchema.type === "formula"}
   <CellString
+    {cellOptions}
     {cellState}
     {fieldSchema}
     {value}
@@ -60,7 +88,7 @@
     on:change
     on:blur
   />
-{:else if fieldSchema.type === "array" || fieldSchema.type === "option"  }
+{:else if fieldSchema.type === "array" || fieldSchema.type === "options"  }
   <CellOptions
     bind:editorState={innerCellState}
     {cellState}
@@ -145,13 +173,13 @@
   :global(.superCell) {
     flex: auto;
     display: flex;
-    align-items: stretch;
     cursor: pointer;
     min-width: 0;
     position: relative;
     z-index: 1;
     border: 1px solid var(--spectrum-global-color-gray-300);
     background-color: var(--spectrum-global-color-blue-100);
+    padding: 0.3rem 0.85rem;
   }
   :global(.superCell.inEdit) {
     border: 1px solid var(--spectrum-global-color-gray-300);
@@ -160,10 +188,12 @@
   :global(.superCell.unstyled) {
     border: unset;
     background-color: unset;
+    padding: unset;
   }
   :global(.superCell.unstyled.inEdit ) {
     border: unset;
     background-color: unset;
+    padding: unset;
   }
   :global(.superCell:focus) {
     outline: none;

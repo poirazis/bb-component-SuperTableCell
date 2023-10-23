@@ -62,9 +62,9 @@
   on:keydown={handleKeyboard} 
 >
   <div bind:this={valueAnchor} class="inline-value">
-    {#if value.length < 1 && inEdit}
+    {#if value?.length < 1 && inEdit}
       <span class="placeholder">{ placeholder } </span>
-    {:else if value.length > 0}
+    {:else if value?.length > 0}
       {#each value as val (val)}
         <div animate:flip={{ duration: 130 }} class="item text">
           <span> {val.primaryDisplay} </span>
@@ -78,7 +78,7 @@
       {#if inEdit}
         <Icon name="Add" hoverable size="S" on:click={(e) => openPicker(e)} />
       {:else if isHovered}
-        <div class="circle"> { value.length } </div>
+        <div class="circle"> { value?.length } </div>
       {/if}
     </div>
   {:else}
@@ -126,7 +126,7 @@
     display: flex;
     align-items: center;
     border-radius: 4px;
-    background-color: var(--spectrum-global-color-gray-600);
+    background-color: #2479BB;
     height: 60%;
     padding-left: 0.5rem;
     padding-right: 0.5rem;

@@ -30,12 +30,14 @@
       handleKeyboard( e ) { }
     },
     Open: {  
+      _enter() { cellState.openEditor() },
+      _exit() { cellState.closeEditor() },
       close() { return "Closed" },
       toggle() { return "Closed" },
       toggleOption ( idx ) { 
         toggleOption(options[idx]); 
-        if (!multi) this.close.debounce(100)
         dispatch("change", value )
+        if (!multi) this.close.debounce(100)
       },
       highlightNext () { 
         if ( focusedOptionIdx == options.length - 1 )
@@ -64,9 +66,9 @@
   $: value = Array.isArray(value) ? value : value ? [ value ] : []
   $: options = fieldSchema?.constraints?.inclusion || [];
   $: optionColors = fieldSchema?.optionColors || {};
-  $: allowNull = !fieldSchema.constraints.presence ?? false;
+  $: allowNull = !fieldSchema?.constraints?.presence ?? false;
   $: if (allowNull && options.length > 1) options = [ "Clear Selection", ...options ]
-  $: inEdit = $cellState == "Editing";
+  $: inEdit = $cellState == "Editing" || $cellState == "EditingWithEditor"
   $: multi = fieldSchema?.type == "array" ?? false
 
   const getOptionColor = (value) => {

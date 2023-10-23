@@ -6,7 +6,7 @@
     const { API } = getContext("sdk");
     const dispatch = createEventDispatcher();
 
-    export let value
+    export let value = []
     export let tableId 
     export let active = false
     
