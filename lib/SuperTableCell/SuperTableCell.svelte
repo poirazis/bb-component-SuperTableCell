@@ -3,7 +3,6 @@
 
   import { clickOutsideAction } from "svelte-legos";
   import SuperCell from "./SuperCell.svelte";
-  import { processStringSync }  from "@budibase/string-templates"
 
   const tableDataChangesStore = getContext("tableDataChangesStore");
   const dispatch = createEventDispatcher();
@@ -15,7 +14,7 @@
   export let valueTemplate
   export let submitOn = "onEnter"
   export let isHovered = false
-  export let enrichedColumnOptions
+  export let columnOptions
 
   let originalValue = Array.isArray(value) ? [ ... value ] : value
 
@@ -29,16 +28,14 @@
     return processStringSync(template,  { Value: value }  )
   }
 
-  /** @type {cellOptions} */
+  /** @type {import('./SuperCell.Svelte').cellOptions} */
   $: cellOptions = {
-    align: enrichedColumnOptions.align,
-    color: getCellColor( value, enrichedColumnOptions?.color ),
-    background: enrichedColumnOptions.background,
-    bold: enrichedColumnOptions.bold,
-    fontWeight: getCellColor( value, enrichedColumnOptions?.fontWeight ),
+    align: columnOptions.align,
+    color: columnOptions.color,
+    background: columnOptions.background ?? "transparent",
+    fontWeight: columnOptions.fontWeight,
+    padding: columnOptions.padding
   }
-
-  console.log(enrichedColumnOptions.color)
 
   function acceptChange ( ) { 
     let newDataChange = {
@@ -118,8 +115,6 @@
   align-items: stretch;
   justify-content: stretch;
   overflow: hidden;
-  padding-left: var(--super-table-cell-padding);
-  padding-right: var(--super-table-cell-padding);
   border: 1px solid transparent;
   min-width: 0;
 }

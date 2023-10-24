@@ -38,6 +38,7 @@
   class:unstyled 
   style:color={cellOptions?.color}
   style:background={cellOptions?.background}
+  style:padding={cellOptions?.padding}
   class:inEdit={ $cellState == "Editing" }
   style:font-weight={ cellOptions?.fontWeight ? cellOptions?.fontWeight : "500"}
   style:max-width={width} 

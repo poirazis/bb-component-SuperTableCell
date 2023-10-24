@@ -3,19 +3,22 @@
   "metadata": {},
   "schema": {
     "name": "bb-component-SuperTableCell",
-    "friendlyName": "⚡️ Super Table Cell",
+    "friendlyName": "Super Table Cell",
     "description": "Create Complex Super Columns !",
     "icon": "TableEdit",
+    "styles": ["padding","border","background"],
     "settings": [
       {
         "type": "text",
         "key": "value",
-        "label": "Value"
+        "label": "Value",
+        "required" : true
       },
       {
         "type": "text",
         "key": "rowKey",
-        "label": "Key"
+        "label": "Key",
+        "required" : true
       },
       {
         "type": "select",
@@ -104,7 +107,7 @@
       },
       {
         "type": "color",
-        "key": "fontColor",
+        "key": "color",
         "label": "Font Color"
       },
       {

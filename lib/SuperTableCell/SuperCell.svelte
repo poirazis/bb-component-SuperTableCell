@@ -2,13 +2,20 @@
     /**
    * The complete set of options that can be passed to a Super Cell.
    * @typedef {Object} cellOptions
+   * @property {Object} schema - The schema of the Cell ( as per Budibase Field Schema ). if Not set, the Cell will render as String
+   * @property {string} mode - Can be Field / TableCell / or Unstyled
+   * @property {string} state - The State of the Cell. Can be View / Edit / Disabled 
+   * @property {string} placeholder - The Cell Placeholder Text
    * @property {string} align - Horizontal Alignment
-   * @property {boolean} bold - Use Bold Font
-   * @property {boolean} italic - Use Italic Font
+   * @property {string} color - Use Font Color
+   * @property {string} weight - Use Font Weight
+   * @property {string} bgColor - The Background Color
+   * @property {string} padding - The padding to be applied to the Cell
+   * @property {boolean} hovered - To enter hovered state
    */
 
   import { processStringSync }  from "@budibase/string-templates"
-  import  fsm  from "svelte-fsm"
+  import fsm from "svelte-fsm"
 
   import CellString from "./cells/CellString.svelte";
   import CellLink from "./cells/CellLink.svelte";
@@ -28,9 +35,7 @@
   export let unstyled
   export let isHovered
 
-  /**
-   * @type {cellOptions}
-   */
+  /** @type {cellOptions} */
   export let cellOptions
 
   let innerCellState

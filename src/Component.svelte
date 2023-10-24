@@ -4,34 +4,46 @@
 
   const component = getContext("component");
   const { styleable } = getContext("sdk");
+
   const columnOptions = getContext("superColumnOptions")
+  const tableHoverStore = getContext("tableHoverStore");
 
   export let value,
     rowKey,
     required = true;
-  export let valueColor;
+  export let color;
   export let editable;
   export let cellType;
   export let viewType;
 
   export let fontColor, fontSize, isBold, isUnderline, isItalic;
 
-
-  $: cellOptions = {
-    color : fontColor
+  $: isHovered = false
+  $: $component.styles = {
+    ...$component.styles,
+    normal: {
+      ...$component.styles.normal,
+      "flex": columnOptions ? "1 1 auto" : null,
+      "display": columnOptions ? "flex" : null,
+      "align-items": columnOptions ? "stretch" : null
+    }
   }
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div use:styleable={$component.styles}>
-  {#if !columnOptions}
-    <p> 🛑 The Super Table Cell can only be used inside a Super Table Column </p>
-  {:else}
+  {#if columnOptions}
     <SuperTableCell 
-      {cellOptions}
       {rowKey} 
       {value} 
-      fieldSchema={$columnOptions.schema} 
-    />
+      {editable} 
+      fieldSchema={$columnOptions.schema}
+      {isHovered} 
+      columnOptions={{
+        ...$columnOptions,
+        "color" : color ? color : $columnOptions.color
+        }}
+    /> 
+  {:else}
+    <p> Super Table Cell can only be used inside a Super Table Column </p>
   {/if}
 </div>
