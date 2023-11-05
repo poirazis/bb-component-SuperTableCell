@@ -4,7 +4,7 @@
   "schema": {
     "name": "bb-component-SuperTableCell",
     "friendlyName": "Super Table Cell",
-    "description": "Create Complex Super Columns !",
+    "description": "Create Complex Super Columns",
     "icon": "TableEdit",
     "styles": ["padding","border","background"],
     "settings": [
