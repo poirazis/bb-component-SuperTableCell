@@ -97,6 +97,7 @@
   <CellOptions
     bind:editorState={innerCellState}
     {cellState}
+    {cellOptions}
     {value}
     {fieldSchema}
     multi={fieldSchema.type == "array"}
@@ -109,6 +110,7 @@
   <CellNumber
     bind:editorState={innerCellState}
     {cellState}
+    {cellOptions}
     {value}
     {fieldSchema}
     formattedValue = { getCellValue(value, valueTemplate) }
@@ -120,6 +122,7 @@
   <CellDatetime
     bind:editorState={innerCellState}
     {cellState}
+    {cellOptions}
     {value}
     {fieldSchema}
     formattedValue = { getCellValue(value, valueTemplate) }
@@ -131,9 +134,9 @@
   <CellLink
     bind:editorState={innerCellState}
     {cellState}
+    {cellOptions}
     {value}
     {fieldSchema}
-    formattedValue = { getCellValue(value, valueTemplate) }
     {unstyled}
     {isHovered}
     on:change
@@ -142,6 +145,7 @@
 {:else if fieldSchema.type === "attachment"  }
   <CellAttachment
     bind:editorState={innerCellState}
+    {cellOptions}
     {cellState}
     {value}
     {fieldSchema}
@@ -153,6 +157,7 @@
 {:else if fieldSchema.type === "boolean"  }
   <CellBoolean
     bind:editorState={innerCellState}
+    {cellOptions}
     {cellState}
     {value}
     {fieldSchema}
@@ -164,6 +169,7 @@
 {:else if fieldSchema.type === "json"  }
   <CellJson
     bind:editorState={innerCellState}
+    {cellOptions}
     {cellState}
     {value}
     {fieldSchema}

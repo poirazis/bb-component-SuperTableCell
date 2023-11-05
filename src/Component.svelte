@@ -8,15 +8,17 @@
   const columnOptions = getContext("superColumnOptions")
   const tableHoverStore = getContext("tableHoverStore");
 
-  export let value,
-    rowKey,
-    required = true;
+  export let value = []
+  export let rowKey
+  export let required = true;
   export let color;
   export let editable;
   export let cellType;
   export let viewType;
 
   export let fontColor, fontSize, isBold, isUnderline, isItalic;
+
+  let parsedValue = []
 
   $: isHovered = false
   $: $component.styles = {
@@ -28,19 +30,27 @@
       "align-items": columnOptions ? "stretch" : null
     }
   }
+
+  $: console.log($columnOptions)
+  $: if ( $columnOptions?.schema?.relationshipType && value ) {
+    parsedValue = JSON.parse(value) ?? []
+  } else {
+    parsedValue = value
+  }
 </script>
 
 <div use:styleable={$component.styles}>
   {#if columnOptions}
     <SuperTableCell 
       {rowKey} 
-      {value} 
+      value={parsedValue}
       {editable} 
       fieldSchema={$columnOptions.schema}
       {isHovered} 
       columnOptions={{
         ...$columnOptions,
-        "color" : color ? color : $columnOptions.color
+        "color" : color ? color : $columnOptions.color,
+        "canEdit" : true
         }}
     /> 
   {:else}

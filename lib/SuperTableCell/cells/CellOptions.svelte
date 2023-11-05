@@ -6,6 +6,7 @@
   import { flip } from 'svelte/animate';
 
   export let cellState
+  export let cellOptions
   export let value;
   export let fieldSchema;
 
@@ -128,6 +129,8 @@
   class:inEdit
   class:unstyled
   class:focused={$cellState == "Focused"}
+  style:padding-left={cellOptions?.padding}
+  style:padding-right={cellOptions?.padding}
   tabindex="-1" 
   on:keydown={handleKeyboard} 
 >

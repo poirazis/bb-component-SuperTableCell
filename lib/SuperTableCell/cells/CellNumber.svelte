@@ -7,6 +7,7 @@
   export let unstyled
   export let placeholder = "Enter..."
   export let debounced
+  export let cellOptions
 
   const dispatch = createEventDispatcher()
 
@@ -35,6 +36,8 @@
 <div class="superCell"
   class:inEdit
   class:unstyled
+  style:padding-left={cellOptions?.padding}
+  style:padding-right={cellOptions?.padding}
 >
   {#if inEdit}
     <input 

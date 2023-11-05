@@ -8,6 +8,7 @@
 
     export let value = []
     export let tableId 
+    export let schema
     export let active = false
     
     let timer;
@@ -61,13 +62,20 @@
     }
 
     const selectRow = ( val ) => {
-      value.push ( { _id: val._id, primaryDisplay: val[tableSchema.primaryDisplay] } )
-      dispatch("change", { value: value })
+
+      if ( schema.relationshipType == "many-to-many" ) {
+        value.push ( { _id: val._id, primaryDisplay: val[tableSchema.primaryDisplay] } )
+      } else if ( schema.relationshipType == "many-to-one") {
+        value.push ( { _id: val._id, primaryDisplay: val[tableSchema.primaryDisplay] } )
+      } else if ( schema.relationshipType == "one-to-many") {
+        value = [ { _id: val._id, primaryDisplay: val[tableSchema.primaryDisplay] }]
+      }
+      dispatch("change", value )
     }
 
     const unselectRow = ( val ) => {
       value.splice( value.findIndex ( (e) => e._id === val._id  ), 1 );
-      dispatch("change", { value: value })
+      dispatch("change", value )
     }
 
     $: loadTableSchema(tableId) 
@@ -75,11 +83,12 @@
 
 </script>
 
-<div class="control" > 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<div class="control" style:min-width={schema.relationshipType == "one-to-many" ? " 160px" : "320px"}> 
 
   <div class="searchControl">
     <div class="columnSelect">
-      {primaryDisplay}
+      {primaryDisplay} - {schema.relationshipType}
     </div>
     <input class="input" on:input={debounce} type="text" placeholder="Search..."/>
     <div class="pageSize">
@@ -90,46 +99,79 @@
     </div>
   </div>
 
-  <div class="listWrapper">
-    <div class="list">
-      <div class="options"> 
-        {#if results}
-          {#await results}
-            <CellSkeleton > <div class="option text"> Loading ... </div> </CellSkeleton> 
-          {:then results}
-              {#if results.rows.length > 0 }
-                {#each results.rows as row, idx }
-                  {#if !(rowSelected(row)) }
-                    <!-- svelte-ignore a11y-click-events-have-key-events -->
-                    <div class="option" on:click={selectRow(row)} >
-                      <div class="option text">
-                        {row[primaryDisplay]}
+  {#if schema.relationshipType == "many-to-many" || schema.relationshipType == "many-to-one"}
+    <div class="listWrapper">
+      <div class="list">
+        <div class="options"> 
+          {#if results}
+            {#await results}
+              <CellSkeleton > <div class="option text"> Loading ... </div> </CellSkeleton> 
+            {:then results}
+              {#key value}
+                {#if results.rows.length > 0 }
+                  {#each results.rows as row, idx }
+                    {#if !(rowSelected(row)) }
+                      <div class="option" on:click={selectRow(row)} >
+                        <div class="option text">
+                          {row[primaryDisplay]}
+                        </div>
                       </div>
-                    </div>
-                  {/if}
-                {/each}
+                    {/if}
+                  {/each}
+                {/if}
+              {/key}
+            {:catch error}
+              <p style="color: red">{error.message}</p>
+            {/await}
+          {/if}
+        </div>
+      </div>
+      <div class="list listSelected">
+        <div class="options"> 
+          {#each value as val, idx }
+            {#if (rowSelected(val)) }
+              <div transition:fly={{ x: -20, duration: 130}} class="option" on:click={unselectRow(val)} >
+                <div class="option text">
+                  {val.primaryDisplay}
+                </div>
+              </div>
+            {/if}
+          {/each}
+        </div>
+      </div>
+    </div>
+  {/if}
+
+  {#if schema.relationshipType == "one-to-many"}
+    <div class="listWrapper">
+      <div class="list" style:width={"100%"}>
+        <div class="options"> 
+          {#if results}
+            {#await results}
+              <CellSkeleton > <div class="option text"> Loading ... </div> </CellSkeleton> 
+            {:then results}
+              {#if results.rows.length > 0 }
+                {#key value}
+                  {#each results.rows as row, idx }
+                    {#if !(rowSelected(row)) }
+                      <div class="option" on:click={selectRow(row)} >
+                        <div class="option text">
+                          {row[primaryDisplay]}
+                        </div>
+                      </div>
+                    {/if}
+                  {/each}
+                {/key}
               {/if}
-          {:catch error}
-            <p style="color: red">{error.message}</p>
-          {/await}
-        {/if}
+            {:catch error}
+              <p style="color: red">{error.message}</p>
+            {/await}
+          {/if}
+        </div>
       </div>
     </div>
-    <div class="list listSelected">
-      <div class="options"> 
-        {#each value as val, idx }
-        {#if (rowSelected(val)) }
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <div transition:fly={{ x: -20, duration: 130}} class="option" on:click={unselectRow(val)} >
-            <div class="option text">
-               {val.primaryDisplay}
-            </div>
-          </div>
-        {/if}
-      {/each}
-      </div>
-    </div>
-  </div>
+  {/if}
+
 </div>
 
 
@@ -137,7 +179,6 @@
    .control {
     flex: auto;
     flex-direction: column;
-    min-width: 400px;
     display: flex;
     align-items: stretch;
     justify-content: space-around;

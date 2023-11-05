@@ -7,6 +7,7 @@
   export let formattedValue
   export let unstyled
   export let width
+  export let cellOptions
 
   const dispatch = createEventDispatcher()
 
@@ -18,6 +19,8 @@
   class="superCell"
   class:unstyled 
   class:inEdit
+  style:padding-left={cellOptions?.padding}
+  style:padding-right={cellOptions?.padding}
   style:max-width={width} 
 >
   {#if inEdit}

@@ -8,6 +8,7 @@
   export let cellState
   export let fieldSchema
   export let unstyled
+  export let cellOptions
 
   const dispatch = createEventDispatcher()
 
@@ -27,6 +28,8 @@
   class:inEdit={ $cellState == "Editing" }
   class:unstyled
   tabindex="-1"
+  style:padding-left={cellOptions?.padding}
+  style:padding-right={cellOptions?.padding}
   on:keydown={handleKeyboard}
   >
     {#if $cellState == "Editing" }
