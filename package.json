@@ -1,6 +1,6 @@
 {
   "name": "bb-component-SuperTableCell",
-  "version": "2.0.0-alpha",
+  "version": "2.0.1-alpha",
   "description": "To be used with the Super Table and Super Columns Components",
   "license": "MIT",
   "svelte": "index.js",
