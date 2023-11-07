@@ -3,6 +3,7 @@
   "version": "2.0.1-alpha",
   "description": "To be used with the Super Table and Super Columns Components",
   "license": "MIT",
+  "author": "Michael Poirazi",
   "svelte": "index.js",
   "module": "dist/plugin.min.js",
   "scripts": {
