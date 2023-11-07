@@ -106,3 +106,4 @@ dist
 
 .idea/
 bun.lockb
+yarn.lock
