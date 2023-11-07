@@ -135,14 +135,10 @@
   filter: brightness(80%);
   background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
 }
-.superTableCellWrapper.focused {
+.superTableCellWrapper.inEdit.focused {
     border-color: var(--spectrum-global-color-gray-500);
   }
-.superTableCellWrapper:focus-within {
+.superTableCellWrapper.inEdit:focus-within {
     border-color: var(--spectrum-global-color-blue-500);
-  }
-.superTableCellWrapper:focus {
-    outline: none;
-    border-color: var(--spectrum-global-color-red-500);
   }
 </style>
