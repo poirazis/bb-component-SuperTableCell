@@ -14,7 +14,8 @@
    * @property {boolean} hovered - To enter hovered state
    */
 
-  import { processStringSync }  from "@budibase/string-templates"
+  import { getContext } from "svelte";
+  const { processStringSync } = getContext("sdk");
   import fsm from "svelte-fsm"
 
   import CellString from "./cells/CellString.svelte";
