@@ -1,7 +1,5 @@
 <script>
-  import { getContext , beforeUpdate, createEventDispatcher } from "svelte";
-
-  import { clickOutsideAction } from "svelte-legos";
+  import { getContext , createEventDispatcher, onMount } from "svelte";
   import SuperCell from "./SuperCell.svelte";
 
   const tableDataChangesStore = getContext("tableDataChangesStore");
@@ -19,14 +17,7 @@
   let originalValue = Array.isArray(value) ? [ ... value ] : value
 
   let cellState
-  let width
-
-  const getCellColor = (value, template) => {
-    if (!template) {
-      return null
-    }
-    return processStringSync(template,  { Value: value }  )
-  }
+  let wrapperAnchor
 
   /** @type {import('./SuperCell.Svelte').cellOptions} */
   $: cellOptions = {
@@ -34,7 +25,7 @@
     color: columnOptions.color,
     background: columnOptions.background ?? "transparent",
     fontWeight: columnOptions.fontWeight,
-    padding: columnOptions.padding
+    padding: columnOptions.padding,
   }
 
   function acceptChange ( ) { 
@@ -65,15 +56,11 @@
       e.preventDefault();
       cellState.unfocus();
     }
+
+    if (e.key == "Enter") {
+      cellState.lostFocus();
+    } 
   }
-
-  let wrapperAnchor
-  let focusedOrHasFocused
-
-  // We need to know if our child Super Cell has the focus
-  beforeUpdate( () => {
-    focusedOrHasFocused = wrapperAnchor?.matches(":focus-within") ?? false
-  })
 
 </script>
 
@@ -82,18 +69,11 @@
 <div 
   bind:this={wrapperAnchor}
   class="superTableCellWrapper"
-  style:--lock-width={width}
-  class:inEdit={$cellState == "Editing" }
-  class:focused={focusedOrHasFocused}
+  class:inEdit={ $cellState == "Editing" }
   tabindex="0"
-  use:clickOutsideAction
   on:keydown={handleKeyboard}
-  on:clickoutside={() => { 
-    if ( cellState && $cellState != "View") {
-      cellState.lostFocus()
-  }}}
-  on:click={() => { width = wrapperAnchor.clietWidth ; cellState.focus() }}
-  on:focus={() => cellState.focus() }
+  on:click={ () => { cellState.focus() } }
+  on:focus={ () => { cellState.focus() } }
 >
   <SuperCell
     bind:cellState 
@@ -103,27 +83,30 @@
     {fieldSchema}
     {editable}
     {isHovered}
+    lockState={false}
     unstyled
     on:change={handleChange}
+    on:keydown
   />
 </div>
 
 <style>
 .superTableCellWrapper {
-  flex: auto;
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: stretch;
   justify-content: stretch;
   overflow: hidden;
   border: 1px solid transparent;
-  min-width: 0;
+  transition: all 30ms ease-out;
 }
 
+.superTableCellWrapper:focus {
+  outline: none;
+}
 .superTableCellWrapper.inEdit {
-  width: var(--lock-width);
-  max-width: var(--lock-width);
-  color: var(--spectrum-global-color-gray-900);
-  border-color: var(--spectrum-global-color-gray-600);
+  border-color: var(--spectrum-global-color-blue-600);
 }
 .superTableCellWrapper.inEdit::before {
   content: "";
@@ -135,10 +118,5 @@
   filter: brightness(80%);
   background-color: var(--spectrum-textfield-m-background-color, var(--spectrum-global-color-gray-50));
 }
-.superTableCellWrapper.inEdit.focused {
-    border-color: var(--spectrum-global-color-gray-500);
-  }
-.superTableCellWrapper.inEdit:focus-within {
-    border-color: var(--spectrum-global-color-blue-500);
-  }
+
 </style>

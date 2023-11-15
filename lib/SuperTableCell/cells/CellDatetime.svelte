@@ -6,29 +6,34 @@
   export let cellState
   export let formattedValue
   export let unstyled
-  export let width
   export let cellOptions
 
   const dispatch = createEventDispatcher()
 
-  $: inEdit = $cellState == "Editing" || $cellState == "EditingWithEditor"
+  let anchor 
+  let pickerStatus = "Closed"
 
+  $: inEdit = $cellState == "Editing"
+  $: if ( inEdit && anchor ) anchor.focus();
 </script>
 
+<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 <div 
+  bind:this={anchor}
   class="superCell"
   class:unstyled 
   class:inEdit
+  tabindex="0"
   style:padding-left={cellOptions?.padding}
   style:padding-right={cellOptions?.padding}
-  style:max-width={width} 
+  on:blur={ () => pickerStatus == "Closed" ? cellState.lostFocus() : null }
 >
   {#if inEdit}
     <div class="pickerWrapper">
       <DatePicker 
         {value} 
-        on:open={cellState.openEditor}
-        on:close={cellState.closeEditor}
+        on:open={ (e) => pickerStatus = "Open" }
+        on:close={ (e) => { pickerStatus = "Closed"; } }
         on:change={(e) => dispatch("change", e.detail ) } />
     </div>
   {:else}

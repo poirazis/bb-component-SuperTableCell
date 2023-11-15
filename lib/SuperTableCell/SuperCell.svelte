@@ -14,8 +14,7 @@
    * @property {boolean} hovered - To enter hovered state
    */
 
-  import { getContext } from "svelte";
-  const { processStringSync } = getContext("sdk");
+  import { getContext , createEventDispatcher } from "svelte";
   import fsm from "svelte-fsm"
 
   import CellString from "./cells/CellString.svelte";
@@ -27,51 +26,43 @@
   import CellNumber from "./cells/CellNumber.svelte";
   import CellJson from "./cells/CellJSON.svelte";
 
+  const { processStringSync } = getContext("sdk");
+  const dispatch = createEventDispatcher();
+
   export let value 
   export let valueTemplate
   export let fieldSchema
   export let editable
   export let initialState = "View"
-  export let lockState
+  export let lockState = false
   export let unstyled
   export let isHovered
+  export let placeholder
 
   /** @type {cellOptions} */
   export let cellOptions
-
-  let innerCellState
-
-  export const isActive = ( ) => { return (!innerCellState || $innerCellState == "Closed" ) }
 
   export let cellState = fsm( initialState , {
     "*": {
       goTo( state ) { return state }
     },
     View: { 
-      focus () { return "Focused" }, },
+      focus () { 
+        return editable ? "Editing" : "Focused" 
+      }
+    },
     Hovered: { cancel: () => { return "View" }},
     Focused: { 
-      _enter() { if (editable) this.enterEditing.debounce(50) },
-      unfocus() { return "View" },
-      lostFocus() { this.unfocus.debounce(50) },
-      enterEditing: "Editing",
+      unfocus() { return lockState ? initialState : "View" },
     },
     Error: { check : "View" },
     Editing: { 
-      openEditor() { return "EditingWithEditor" },
-      focus() {},
-      unfocus( fn ) { 
-        if (innerCellState == undefined || $innerCellState == "Closed" ) {
-          fn?.();
-        } 
-        if (!lockState) return "View";
-      },
-      lostFocus( fn ) { this.unfocus.debounce(50, fn) },
+      unfocus() { return lockState ? initialState : "View" },
+      lostFocus() { 
+        dispatch("blur", {} );
+        return lockState ? initialState : "View" },
       submit() { if ( value != originalValue ) acceptChange() ; return "View" }, 
       cancel() { value = Array.isArray(originalValue) ? [ ... originalValue ] : originalValue ; return "View" },
-    },
-    EditingWithEditor: { 
-      closeEditor() { return "Editing" }
     }
   })
 
@@ -88,15 +79,16 @@
     {cellOptions}
     {cellState}
     {fieldSchema}
+    {placeholder}
     {value}
     formattedValue = { getCellValue(value, valueTemplate) }
     {unstyled}
     on:change
+    on:focus
     on:blur
   />
 {:else if fieldSchema.type === "array" || fieldSchema.type === "options"  }
   <CellOptions
-    bind:editorState={innerCellState}
     {cellState}
     {cellOptions}
     {value}
@@ -105,11 +97,9 @@
     formattedValue = { getCellValue(value, valueTemplate) }
     {unstyled}
     on:change
-    on:blur
   />
 {:else if fieldSchema.type === "number" || fieldSchema.type == "bigint" }
   <CellNumber
-    bind:editorState={innerCellState}
     {cellState}
     {cellOptions}
     {value}
@@ -117,11 +107,9 @@
     formattedValue = { getCellValue(value, valueTemplate) }
     {unstyled}
     on:change
-    on:blur
   />
 {:else if fieldSchema.type === "datetime"}
   <CellDatetime
-    bind:editorState={innerCellState}
     {cellState}
     {cellOptions}
     {value}
@@ -129,11 +117,9 @@
     formattedValue = { getCellValue(value, valueTemplate) }
     {unstyled}
     on:change
-    on:blur
   />
 {:else if fieldSchema.type === "link"  }
   <CellLink
-    bind:editorState={innerCellState}
     {cellState}
     {cellOptions}
     {value}
@@ -141,11 +127,9 @@
     {unstyled}
     {isHovered}
     on:change
-    on:blur
   />
 {:else if fieldSchema.type === "attachment"  }
   <CellAttachment
-    bind:editorState={innerCellState}
     {cellOptions}
     {cellState}
     {value}
@@ -153,11 +137,9 @@
     formattedValue = { getCellValue(value, valueTemplate) }
     {unstyled}
     on:change
-    on:blur
   />
 {:else if fieldSchema.type === "boolean"  }
   <CellBoolean
-    bind:editorState={innerCellState}
     {cellOptions}
     {cellState}
     {value}
@@ -165,11 +147,9 @@
     formattedValue = { getCellValue(value, valueTemplate) }
     {unstyled}
     on:change
-    on:blur
   />
 {:else if fieldSchema.type === "json"  }
   <CellJson
-    bind:editorState={innerCellState}
     {cellOptions}
     {cellState}
     {value}
@@ -177,13 +157,12 @@
     formattedValue = { getCellValue(value, valueTemplate) }
     {unstyled}
     on:change
-    on:blur
   />
 {/if}
 
 <style>
   :global(.superCell) {
-    flex: auto;
+    width: 80px;
     display: flex;
     cursor: pointer;
     min-width: 0;
@@ -212,7 +191,7 @@
   }
   :global(.overflow) {
     position: absolute;
-    right: 0;
+    right: var(--super-table-cell-padding);
     top: 20%;
     height: 60%;
     display: flex;

@@ -39,7 +39,6 @@
   class="superCell"
   class:unstyled 
   class:inEdit={ $cellState == "Editing" }
-  style:max-width={width} 
 >
   {#if $cellState == "Editing" }
     <input class="inline-edit" {value} {placeholder} on:input={debounce} use:focus on:blur={cellState.unfocus} />

@@ -2,7 +2,7 @@
   import Icon from "../../../node_modules/@budibase/bbui/src/Icon/Icon.svelte";
   import Popover from "../../../node_modules/@budibase/bbui/src/Popover/Popover.svelte";
   import fsm from "svelte-fsm";
-  import { onMount, createEventDispatcher ,beforeUpdate } from "svelte"
+  import { createEventDispatcher ,beforeUpdate } from "svelte"
   import { flip } from 'svelte/animate';
 
   export let cellState
@@ -24,17 +24,13 @@
   let valueAnchor
   let overflow = true
   let focusedOptionIdx = undefined;
-  let lockWidth
 
   export let editorState = fsm( "Closed", {
     "*": {
       handleKeyboard( e ) { }
     },
     Open: {  
-      _enter() { cellState.openEditor() },
-      _exit() { cellState.closeEditor() },
-      close() { return "Closed" },
-      toggle() { return "Closed" },
+      toggle() { cellState.closeEditor(); anchor.focus(); return "Closed" },
       toggleOption ( idx ) { 
         toggleOption(options[idx]); 
         dispatch("change", value )
@@ -58,8 +54,7 @@
       },
     },
     Closed: {
-      toggle() { return "Open" },
-      open() { return "Open" },
+      toggle() { cellState.openEditor(); return "Open" },
       highlightNext () { return "Open" },
     }
   });
@@ -69,8 +64,9 @@
   $: optionColors = fieldSchema?.optionColors || {};
   $: allowNull = !fieldSchema?.constraints?.presence ?? false;
   $: if (allowNull && options.length > 1) options = [ "Clear Selection", ...options ]
-  $: inEdit = $cellState == "Editing" || $cellState == "EditingWithEditor"
+  $: inEdit = $cellState == "Editing"
   $: multi = fieldSchema?.type == "array" ?? false
+  $: if ( inEdit && anchor && editorState == "Closed" ) anchor?.focus() 
 
   const getOptionColor = (value) => {
     return defaultOptionColor;
@@ -101,6 +97,7 @@
 
     if (!multi) {
       value = [option];
+      editorState.toggle();
     } else {
       if (value.includes(option)) {
         value.splice(value.indexOf(option), 1);
@@ -114,11 +111,6 @@
   beforeUpdate ( () => { 
     overflow = valueAnchor ? valueAnchor.clientWidth != valueAnchor.scrollWidth : undefined
   } )
-  onMount( () => { 
-    lockWidth = anchor.clientWidth 
-    if ( $cellState != "View" )
-      anchor.focus();
-  } )
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -131,8 +123,10 @@
   class:focused={$cellState == "Focused"}
   style:padding-left={cellOptions?.padding}
   style:padding-right={cellOptions?.padding}
-  tabindex="-1" 
+  tabindex="0" 
   on:keydown={handleKeyboard} 
+  on:click={ () => { if ( $cellState == "Editing" ) editorState.toggle() } }
+  on:blur={() => { cellState.lostFocus() } }
 >
   <div bind:this={valueAnchor} class="inline-value" >
     {#if value.length < 1 && inEdit}
@@ -149,10 +143,10 @@
 
   {#if overflow && inEdit}
     <div class="overflow" class:inEdit style:background-color={ fadeToColor } >
-      <Icon name="ChevronDown" hoverable on:click={editorState.open} />
+      <Icon name="ChevronDown" hoverable />
     </div>
   {:else if inEdit}
-    <Icon name="ChevronDown" hoverable on:click={editorState.open} />
+    <Icon name="ChevronDown" hoverable />
   {:else if overflow}
     <div class="overflow" style:background-color={fadeToColor} ></div>
   {/if}
@@ -162,8 +156,8 @@
     useAnchorWidth={!multi}
     dismissible
     align={"left"} 
-    open={ $editorState == "Open" } 
-    on:close={ editorState.close }
+    open={ $editorState == "Open" && inEdit }
+    on:close={ () => { editorState.toggle() } }
   >
     <div class="options" on:wheel={(e) => e.stopPropagation()}>
       {#if options.length < 1}
@@ -188,7 +182,7 @@
             <div
               class="option"
               class:focused={focusedOptionIdx === idx}
-              on:click|preventDefault|stopPropagation={(e) => editorState.toggleOption(idx)}
+              on:mousedown|preventDefault|stopPropagation={(e) => editorState.toggleOption(idx)}
               on:mouseenter={() => (focusedOptionIdx = idx)}
             >
               <div class="option text">

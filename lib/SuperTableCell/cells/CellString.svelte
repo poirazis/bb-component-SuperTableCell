@@ -4,7 +4,6 @@
   export let value = ""
   export let cellState
   export let formattedValue
-  export let width 
   export let placeholder = "Enter ... "
   export let debounced
   export let unstyled = false
@@ -19,7 +18,6 @@
   let timer;
 	const debounce = e => {
     value = e.target.value
-
     if (debounced) {    
       clearTimeout(timer);
       timer = setTimeout(() => {
@@ -41,8 +39,6 @@
   style:padding={cellOptions?.padding}
   class:inEdit={ $cellState == "Editing" }
   style:font-weight={ cellOptions?.fontWeight ? cellOptions?.fontWeight : "500"}
-  style:max-width={width} 
-
 >
   {#if $cellState == "Editing" }
     <input 
@@ -50,7 +46,7 @@
       {value} 
       {placeholder} 
       on:input={debounce}
-      on:blur
+      on:blur={cellState.lostFocus}
       use:focus
     />
   {:else}

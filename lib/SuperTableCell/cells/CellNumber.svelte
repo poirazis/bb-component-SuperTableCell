@@ -38,6 +38,7 @@
   class:unstyled
   style:padding-left={cellOptions?.padding}
   style:padding-right={cellOptions?.padding}
+  style:width={$cellState == "Editing" || $cellState == "EditingWithEditor" ? cellOptions.width : null } 
 >
   {#if inEdit}
     <input 
@@ -46,7 +47,7 @@
       {value} 
       {placeholder} 
       on:input={debounce}
-      on:blur
+      on:blur={cellState.lostFocus}
       use:focus
     />
   {:else}

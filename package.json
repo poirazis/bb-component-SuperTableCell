@@ -12,9 +12,9 @@
   },
   "dependencies": {
     "@crownframework/svelte-error-boundary": "^1.0.3",
-    "svelte": "^3.49.0",
-    "svelte-legos": "^0.2.1",
-    "svelte-fsm": "^1.2.0"
+    "svelte": "^3.59.0",
+    "svelte-fsm": "^1.2.0",
+    "svelte-legos": "^0.2.1"
   },
   "devDependencies": {
     "@budibase/backend-core": "^2.9.19",

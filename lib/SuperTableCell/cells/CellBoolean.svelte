@@ -1,6 +1,5 @@
 <script>
   import { createEventDispatcher } from 'svelte'
-  import Switch from "../../../node_modules/@budibase/bbui/src/Form/Core/Switch.svelte"
   import Icon from "../../../node_modules/@budibase/bbui/src/Icon/Icon.svelte"
 
   export let value
@@ -20,28 +19,43 @@
     }
   }
 
+  let anchor
+
+  $: inEdit = $cellState == "Editing"
+  $: if ( inEdit && anchor ) anchor?.focus() 
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 <div 
   class="superCell" 
   class:inEdit={ $cellState == "Editing" }
   class:unstyled
-  tabindex="-1"
+  tabindex="0"
   style:padding-left={cellOptions?.padding}
   style:padding-right={cellOptions?.padding}
   on:keydown={handleKeyboard}
   >
-    {#if $cellState == "Editing" }
+    {#if inEdit }
       <div class="inline-value" > 
-        <Switch {value} on:change={(e) => dispatch("change", { value: e.detail } )}/>
+        <div class="spectrum-Switch spectrum-Switch--emphasized">
+          <input
+            bind:this={anchor}
+            checked={value}
+            on:change={(e) => dispatch("change", { value: e.detail } )}
+            type="checkbox"
+            class="spectrum-Switch-input"
+            on:blur={cellState.lostFocus}
+          />
+          <span class="spectrum-Switch-switch" />
+        </div>
       </div>
     {:else}
-    <div class="inline-value" > 
-      {#if value}
-        <Icon size="XS" name="Checkmark" color={"lime"}/>
-      {/if}
-    </div>
+      <div class="inline-value" > 
+        {#if value}
+          <Icon size="S" name="Checkmark" color={"lime"}/>
+        {/if}
+      </div>
     {/if}
 </div>
 
