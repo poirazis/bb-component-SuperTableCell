@@ -87,9 +87,6 @@
 <div class="control" style:min-width={schema.relationshipType == "one-to-many" ? " 160px" : "320px"}> 
 
   <div class="searchControl">
-    <div class="columnSelect">
-      {primaryDisplay} - {schema.relationshipType}
-    </div>
     <input class="input" on:input={debounce} type="text" placeholder="Search..."/>
     <div class="pageSize">
       <div class="pageSizeItem" class:selected={limit == 10} on:click={(e) => setLimit(e, 10)}> 10 </div>
@@ -111,7 +108,7 @@
                 {#if results.rows.length > 0 }
                   {#each results.rows as row, idx }
                     {#if !(rowSelected(row)) }
-                      <div class="option" on:click={selectRow(row)} >
+                      <div class="option" on:mousedown|stopPropagation|preventDefault={selectRow(row)} >
                         <div class="option text">
                           {row[primaryDisplay]}
                         </div>
@@ -130,7 +127,7 @@
         <div class="options"> 
           {#each value as val, idx }
             {#if (rowSelected(val)) }
-              <div transition:fly={{ x: -20, duration: 130}} class="option" on:click={unselectRow(val)} >
+              <div transition:fly={{ x: -20, duration: 130}} class="option" on:mousedown|stopPropagation|preventDefault={unselectRow(val)} >
                 <div class="option text">
                   {val.primaryDisplay}
                 </div>
@@ -154,7 +151,7 @@
                 {#key value}
                   {#each results.rows as row, idx }
                     {#if !(rowSelected(row)) }
-                      <div class="option" on:click={selectRow(row)} >
+                      <div class="option" on:mousedown|stopPropagation|preventDefault={selectRow(row)} >
                         <div class="option text">
                           {row[primaryDisplay]}
                         </div>
@@ -183,7 +180,7 @@
     align-items: stretch;
     justify-content: space-around;
     gap: 0.85rem;
-    padding: 0.5rem;
+    padding: 0.5rem 0.5rem 0.5rem 0.5rem;
   }
 
   .searchControl {

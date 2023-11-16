@@ -25,6 +25,7 @@
   let overflow
 
   $: inEdit = $cellState == "Editing"
+  $: if ( inEdit ) anchor.focus()
   $: if ( value == "" || value == undefined ) value = []
 
   const unselectRow = ( val ) => {
@@ -40,7 +41,7 @@
   }
 
   const handleKeyboard = ( e ) => {
-    if ( e.keyCode == 32 ) {
+    if ( e.keyCode == 32 && $cellState == "Editing") {
       e.preventDefault();
       e.stopPropagation();
       editorState.toggle();
@@ -67,7 +68,9 @@
   class:focused={$cellState == "Focused"}
   style:padding-left={cellOptions?.padding}
   style:padding-right={cellOptions?.padding}
-  tabindex="0" 
+  style:width={$cellState == "Editing" ? cellOptions.width : null } 
+  tabindex="0"
+  on:blur={() => { if (! anchor.matches(":focus-within")) cellState.lostFocus ()  } } 
   on:keydown={handleKeyboard} 
 >
   <div bind:this={valueAnchor} class="inline-value">

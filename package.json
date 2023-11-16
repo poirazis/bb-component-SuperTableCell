@@ -1,6 +1,6 @@
 {
   "name": "bb-component-SuperTableCell",
-  "version": "2.0.1-alpha",
+  "version": "2.0.2-alpha",
   "description": "To be used with the Super Table and Super Columns Components",
   "license": "MIT",
   "author": "Michael Poirazi",
@@ -12,9 +12,9 @@
   },
   "dependencies": {
     "@crownframework/svelte-error-boundary": "^1.0.3",
-    "svelte": "^3.49.0",
-    "svelte-legos": "^0.2.1",
-    "svelte-fsm": "^1.2.0"
+    "svelte": "^3.59.0",
+    "svelte-fsm": "^1.2.0",
+    "svelte-legos": "^0.2.1"
   },
   "devDependencies": {
     "@budibase/backend-core": "^2.9.19",
