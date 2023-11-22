@@ -162,10 +162,10 @@
 
 <style>
   :global(.superCell) {
-    width: 80px;
+    flex: auto;
+    min-width: 80px;
     display: flex;
     cursor: pointer;
-    min-width: 0;
     position: relative;
     z-index: 1;
     border: 1px solid var(--spectrum-global-color-gray-300);
