@@ -1,5 +1,4 @@
 <script>
-  import Icon from "../../../node_modules/@budibase/bbui/src/Icon/Icon.svelte";
   import Popover from "../../../node_modules/@budibase/bbui/src/Popover/Popover.svelte";
   import fsm from "svelte-fsm";
   import { createEventDispatcher ,beforeUpdate } from "svelte"
@@ -143,10 +142,10 @@
 
   {#if overflow && inEdit}
     <div class="overflow" class:inEdit style:background-color={ fadeToColor } >
-      <Icon name="ChevronDown" hoverable />
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg>
     </div>
   {:else if inEdit}
-    <Icon name="ChevronDown" hoverable />
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down"><path d="m6 9 6 6 6-6"/></svg>
   {:else if overflow}
     <div class="overflow" style:background-color={fadeToColor} ></div>
   {/if}
@@ -174,7 +173,13 @@
               on:click|preventDefault={(e) => editorState.toggleOption(idx)}
             >
               <div class="option text">
-                <Icon name={"Cancel"} size="S" color="var(--spectrum-global-color-red-500)" />
+                <svg xmlns="http://www.w3.org/2000/svg" 
+                  width="16" height="16" viewBox="0 0 24 24" 
+                  fill="none" stroke="var(--spectrum-global-color-red-500)" 
+                  stroke-width="2" stroke-linecap="round" 
+                  stroke-linejoin="round" class="lucide lucide-x">
+                    <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+                </svg>
                 {option}
               </div>
             </div>
@@ -186,11 +191,19 @@
               on:mouseenter={() => (focusedOptionIdx = idx)}
             >
               <div class="option text">
-                <Icon name={optionIcon} size="S" {color} />
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill={color} stroke={color} stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square"><rect width="18" height="18" x="3" y="3" rx="2"/></svg>
                 {option}
               </div>
               {#if value?.includes(option)}
-                <Icon name="Checkmark" size="S" color="var(--primaryColor)" />
+                <svg xmlns="http://www.w3.org/2000/svg" 
+                width="14" height="14" viewBox="0 0 24 24" 
+                fill="none" stroke="var(--primaryColor)" 
+                stroke-width="2" 
+                stroke-linecap="round" 
+                stroke-linejoin="round" 
+                class="lucide lucide-check">
+                  <path d="M20 6 9 17l-5-5"/>
+                </svg>
               {/if}
             </div>
           {/if}

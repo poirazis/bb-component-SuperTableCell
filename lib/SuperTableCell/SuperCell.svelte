@@ -209,4 +209,10 @@
     border: 1px solid var(--spectrum-global-color-gray-300);
     background-color: var(--spectrum-global-color-gray-50);
   }
+
+  :global(.superCell .lucide) {
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
 </style>
