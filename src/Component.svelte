@@ -31,7 +31,6 @@
     }
   }
 
-  $: console.log($columnOptions)
   $: if ( $columnOptions?.schema?.relationshipType && value ) {
     parsedValue = JSON.parse(value) ?? []
   } else {
