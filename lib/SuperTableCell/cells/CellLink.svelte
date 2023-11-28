@@ -1,5 +1,4 @@
 <script>
-  import Icon from "../../../node_modules/@budibase/bbui/src/Icon/Icon.svelte";
   import Popover from "../../../node_modules/@budibase/bbui/src/Popover/Popover.svelte";
   import fsm from "svelte-fsm";
   import { createEventDispatcher, beforeUpdate } from "svelte";
@@ -88,14 +87,14 @@
   {#if overflow}
     <div class="overflow" class:inEdit={inEdit || isHovered} style:background-color={ fadeToColor } >
       {#if inEdit}
-        <Icon name="Add" hoverable size="S" on:click={(e) => openPicker(e)} />
+        <svg on:click={(e) => openPicker(e)} xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
       {:else if isHovered}
         <div class="circle"> { value?.length } </div>
       {/if}
     </div>
   {:else}
     {#if inEdit}
-      <Icon name="Add" hoverable size="S" on:click={(e) => openPicker(e)} />
+      <svg on:click={(e) => openPicker(e)} xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
     {/if}
   {/if}
 </div>
@@ -145,4 +144,5 @@
     white-space: nowrap;
     gap: 0.5rem;
   }
+
 </style>
