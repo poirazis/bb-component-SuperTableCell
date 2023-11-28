@@ -53,7 +53,7 @@
       <div class="inline-value" > 
         {#if value}
         <svg xmlns="http://www.w3.org/2000/svg" 
-          width="18" height="18" viewBox="0 0 24 24" 
+          width="14" height="14" viewBox="0 0 24 24" 
           fill="none" stroke="lime" 
           stroke-width="2" 
           stroke-linecap="round" 
