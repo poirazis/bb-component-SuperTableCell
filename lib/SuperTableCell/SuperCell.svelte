@@ -38,6 +38,7 @@
   export let unstyled
   export let isHovered
   export let placeholder
+  export let multi = true
 
   /** @type {cellOptions} */
   export let cellOptions
@@ -93,7 +94,7 @@
     {cellOptions}
     {value}
     {fieldSchema}
-    multi={fieldSchema.type == "array"}
+    multi={fieldSchema.type == "array" && multi}
     formattedValue = { getCellValue(value, valueTemplate) }
     {unstyled}
     on:change
@@ -192,8 +193,8 @@
   :global(.overflow) {
     position: absolute;
     right: var(--super-table-cell-padding);
-    top: 20%;
-    height: 60%;
+    top: 10%;
+    height: 90%;
     display: flex;
     align-items: center;
     justify-content: flex-end;

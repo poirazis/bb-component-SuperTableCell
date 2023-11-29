@@ -238,7 +238,7 @@
     border-radius: 4px;
     background-color: var(--color);
     color: var(--spectrum-global-color-gray-800);
-    height: 60%;
+    height: 90%;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
     max-height: 1.85rem;
