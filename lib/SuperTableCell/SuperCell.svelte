@@ -12,7 +12,11 @@
    * @property {string} bgColor - The Background Color
    * @property {string} padding - The padding to be applied to the Cell
    * @property {boolean} hovered - To enter hovered state
-   */
+   * @property {string} iconFront - The icon class name to render in from of the value
+   * @property {boolean} clearValueIcon - Wether to show an in line X mark that clears the value 
+   * @property {number} debounce - The debounce time in ms before the cell send the change event
+  */
+  export {};
 
   import { getContext , createEventDispatcher } from "svelte";
   import fsm from "svelte-fsm"

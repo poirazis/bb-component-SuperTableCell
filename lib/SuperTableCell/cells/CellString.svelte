@@ -1,4 +1,7 @@
 <script>
+  /**
+   * @typedef {import('../SuperCell.svelte').cellOptions} cellOptions
+   */
   import { createEventDispatcher } from "svelte";
 
   export let value = ""
@@ -7,6 +10,8 @@
   export let placeholder = "Enter ... "
   export let debounced
   export let unstyled = false
+  
+  /** @type {cellOptions} */
   export let cellOptions
 
   const focus = (node) => {
@@ -18,11 +23,11 @@
   let timer;
 	const debounce = e => {
     value = e.target.value
-    if (debounced) {    
+    if (cellOptions.debounce) {    
       clearTimeout(timer);
       timer = setTimeout(() => {
         dispatch("change", value )
-      }, debounced ?? 0 );
+      }, cellOptions.debounce ?? 0 );
     }
     else {
      dispatch("change", value )
@@ -41,14 +46,21 @@
   style:font-weight={ cellOptions?.fontWeight ? cellOptions?.fontWeight : "500"}
 >
   {#if $cellState == "Editing" }
+    {#if cellOptions?.iconFront}
+      <i class={cellOptions.iconFront} style:color={ value ? "var(--primaryColor)" : "var(--spectrum-global-color-gray-500)"  }></i>
+    {/if}
     <input 
-      class="inline-edit" 
+      class="inline-edit"
       {value} 
-      {placeholder} 
+      style:padding-left={cellOptions.iconFront ? "0.5rem" : "0rem"}
+      placeholder={cellOptions?.placeholder}
       on:input={debounce}
       on:blur={cellState.lostFocus}
       use:focus
     />
+    {#if cellOptions.clearValueIcon}
+      <i class="ri-close-line" on:mousedown|preventDefault={ ()=> dispatch("change", null )}></i>
+    {/if}
   {:else}
     <div class="value" 
     style:justify-content={cellOptions.align}> {formattedValue || value || "" } </div>
