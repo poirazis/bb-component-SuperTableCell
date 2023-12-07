@@ -43,7 +43,7 @@
   style:background={cellOptions?.background}
   style:padding={cellOptions?.padding}
   class:inEdit={ $cellState == "Editing" }
-  style:font-weight={ cellOptions?.fontWeight ? cellOptions?.fontWeight : "500"}
+  style:font-weight={ cellOptions?.fontWeight ? cellOptions?.fontWeight : "400"}
 >
   {#if $cellState == "Editing" }
     {#if cellOptions?.iconFront}
@@ -68,7 +68,6 @@
 </div>
 
 <style>
-
   .value {
     flex: auto;
     display: flex;
@@ -76,6 +75,7 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
+    font-size: var(--super-table-base-font-size);
   }
   .inline-edit {
     width: 100%;
@@ -95,7 +95,12 @@
   }
 
   .inline-edit::placeholder {
-    color: var(--primaryColor);
     font-style: italic;
+    font-size: 12px;
+    color: var(--spectrum-global-color-gray-500);
+  }
+  .inline-edit:focus::placeholder {
+    font-style: italic;
+    color: var(--spectrum-global-color-blue-500);
   }
 </style>

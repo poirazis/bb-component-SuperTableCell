@@ -10,7 +10,7 @@
   export let fieldSchema;
 
   export let useOptionColors = false
-  export let defaultOptionColor = "#19647E"
+  export let defaultOptionColor = "var(--spectrum-global-color-seafoam-700)"
   export let isHovered = false
   export let placeholder = multi ? "Choose options" : "Choose an option";
   export let fadeToColor = "var(--spectrum-global-color-gray-50)"
@@ -241,7 +241,7 @@
     height: 90%;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
-    max-height: 1.85rem;
+    max-height: 1.5rem;
   }
   .text {
     overflow: hidden;

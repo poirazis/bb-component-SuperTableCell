@@ -78,6 +78,7 @@
     {:else if value?.length > 0}
       {#each value as val}
         <div class="item">
+          <i class="ri-links-line" />
           <span> {val.primaryDisplay} </span>
         </div>
       {/each}
@@ -137,7 +138,8 @@
     display: flex;
     align-items: center;
     border-radius: 4px;
-    background-color: #2479BB;
+    background-color: var(--spectrum-global-color-gray-300);
+    color: var(--spectrum-global-color-gray-800);
     height: 60%;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
