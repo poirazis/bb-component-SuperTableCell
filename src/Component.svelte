@@ -1,6 +1,6 @@
 <script>
   import { getContext } from "svelte";
-  import SuperTableCell from "../lib/SuperTableCell/SuperTableCell.svelte";
+  import { SuperTableCell } from "../bb_super_components_shared/src/lib"
 
   const component = getContext("component");
   const { styleable } = getContext("sdk");
