@@ -14,7 +14,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          submodules: recursive
+          path: ${{ github.workspace }}/bb-component-SuperTableCell
+      - uses: actions/checkout@v3
+        name: Checkout Super Components Shared code repository
+        with: 
+          repository: poirazis/bb_super_components_shared
+          path: ${{ github.workspace }}/bb_super_components_shared
+          ref: main
       - uses: actions/setup-node@v1
         with:
           node-version: 18
@@ -22,7 +28,7 @@ jobs:
         run: |
           cd bb_super_components_shared
           yarn
-          cd ..
+          cd ../bb-component-SuperTableCell
           release_version=$(cat package.json | jq -r '.version')
           echo "RELEASE_VERSION=$release_version" >> $GITHUB_ENV
           yarn
@@ -34,4 +40,4 @@ jobs:
           tag_name: v${{ env.RELEASE_VERSION }}
           generate_release_notes: true
           files: |
-            dist/*.tar.gz
+            ${{ github.workspace }}/bb-component-SuperTableCell/dist/*.tar.gz
