@@ -1,6 +1,6 @@
 <script>
   import { getContext } from "svelte";
-  import { SuperTableCell } from "../../bb_super_components_shared/src/lib"
+  import CellString from "../../bb_super_components_shared/src/lib/SuperCell/cells/CellString.svelte";
 
   const component = getContext("component");
   const { styleable } = getContext("sdk");
@@ -40,18 +40,7 @@
 
 <div use:styleable={$component.styles}>
   {#if columnOptions}
-    <SuperTableCell 
-      {rowKey} 
-      value={parsedValue}
-      {editable} 
-      fieldSchema={$columnOptions.schema}
-      {isHovered} 
-      columnOptions={{
-        ...$columnOptions,
-        "color" : color ? color : $columnOptions.color,
-        "canEdit" : true
-        }}
-    /> 
+    <CellString />
   {:else}
     <p> Super Table Cell can only be used inside a Super Table Column </p>
   {/if}
