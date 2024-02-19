@@ -1,6 +1,6 @@
 <script>
   import { getContext } from "svelte";
-  import CellString from "../../bb_super_components_shared/src/lib/SuperCell/cells/CellString.svelte";
+  import CellString from "../../bb_super_components_shared/src/lib/SuperCells/CellString.svelte";
 
   const component = getContext("component");
   const { styleable } = getContext("sdk");
